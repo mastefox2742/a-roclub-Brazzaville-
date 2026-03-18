@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroSim 242 – Formations</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--navy:#050e1a;--navy2:#091525;--cyan:#00d4ff;--amber:#f0a500;--silver:#a8bcc8;--silver2:#5a7484;--green-hud:#39ff85;--white:#e8f4ff;--border:rgba(0,212,255,0.15);}
+*{cursor:none!important;}
+.cursor{position:fixed;width:28px;height:28px;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);}
+.cursor::before,.cursor::after{content:'';position:absolute;background:var(--cyan);}
+.cursor::before{width:1px;height:100%;left:50%;top:0;transform:translateX(-50%);}
+.cursor::after{width:100%;height:1px;top:50%;left:0;transform:translateY(-50%);}
+.cursor .c-dot{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--cyan);top:50%;left:50%;transform:translate(-50%,-50%);}
+body{font-family:'Rajdhani',sans-serif;background:var(--navy);color:var(--silver);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+
+.hud-corner{position:fixed;width:50px;height:50px;pointer-events:none;z-index:8;}
+.hud-corner::before,.hud-corner::after{content:'';position:absolute;background:rgba(0,212,255,0.4);}
+.hud-corner.tl{top:10px;left:10px;}.hud-corner.tl::before{width:16px;height:1px;top:0;left:0;}.hud-corner.tl::after{width:1px;height:16px;top:0;left:0;}
+.hud-corner.tr{top:10px;right:10px;}.hud-corner.tr::before{width:16px;height:1px;top:0;right:0;}.hud-corner.tr::after{width:1px;height:16px;top:0;right:0;}
+.hud-corner.bl{bottom:10px;left:10px;}.hud-corner.bl::before{width:16px;height:1px;bottom:0;left:0;}.hud-corner.bl::after{width:1px;height:16px;bottom:0;left:0;}
+.hud-corner.br{bottom:10px;right:10px;}.hud-corner.br::before{width:16px;height:1px;bottom:0;right:0;}.hud-corner.br::after{width:1px;height:16px;bottom:0;right:0;}
+
+header{position:relative;z-index:10;background:rgba(5,14,26,0.97);border-bottom:1px solid var(--border);}
+.header-top{display:flex;align-items:center;padding:14px 40px;gap:24px;border-bottom:1px solid rgba(0,212,255,0.07);}
+.logo-link{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.logo-badge{width:48px;height:48px;border:1px solid rgba(0,212,255,0.4);border-radius:3px;display:flex;align-items:center;justify-content:center;background:rgba(0,212,255,0.05);}
+.logo-badge svg{width:32px;height:32px;}
+.brand{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.5rem;color:var(--cyan);letter-spacing:0.1em;}
+.tagline-sm{font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--silver2);letter-spacing:0.12em;text-transform:uppercase;}
+.hc{flex:1;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--white);}
+.hud-data{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--silver2);line-height:1.7;text-align:right;}
+.hud-data span{color:var(--cyan);}
+.header-nav{display:flex;padding:0 40px;}
+.nav-link{padding:10px 18px;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.86rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--silver2);text-decoration:none;border-right:1px solid rgba(0,212,255,0.07);position:relative;transition:color .2s,background .2s;}
+.nav-link::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--cyan);transition:width .3s;}
+.nav-link:hover{color:var(--cyan);background:rgba(0,212,255,0.04);}
+.nav-link:hover::after{width:100%;}
+.nav-link.active{color:var(--cyan);}
+.nav-link.active::after{width:100%;}
+.nav-link.amber{color:var(--amber);}
+.nav-link.amber:hover{color:var(--amber);}
+.nav-link.amber::after{background:var(--amber);}
+.nav-link.cta{margin-left:auto;color:var(--navy);background:var(--cyan);font-weight:700;border-right:none;}
+.nav-link.cta:hover{background:#33e0ff;}
+.nav-link.cta::after{display:none;}
+
+/* MAIN */
+main{position:relative;z-index:2;padding:40px 60px;}
+.breadcrumb{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);letter-spacing:0.1em;margin-bottom:20px;}
+.breadcrumb a{color:var(--cyan);text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+
+.page-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.8rem;color:var(--white);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}
+.page-sub{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--silver2);letter-spacing:0.1em;margin-bottom:32px;}
+
+/* TABS */
+.tabs{display:flex;gap:0;margin-bottom:32px;border:1px solid var(--border);width:fit-content;}
+.tab{padding:10px 20px;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--silver2);text-decoration:none;border-right:1px solid var(--border);transition:color .2s,background .2s;}
+.tab:last-child{border-right:none;}
+.tab:hover{color:var(--cyan);background:rgba(0,212,255,0.05);}
+.tab.active{color:var(--navy);background:var(--cyan);font-weight:700;}
+
+/* MODULES GRID */
+.modules-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.mod-card{background:rgba(9,21,37,0.9);border:1px solid var(--border);text-decoration:none;color:inherit;transition:all .3s;display:block;position:relative;overflow:hidden;}
+.mod-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;transform:scaleY(0);transform-origin:top;transition:transform .3s;}
+.mod-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,212,255,0.12);}
+.mod-card:hover::before{transform:scaleY(1);}
+
+/* Module color accents */
+.mod-010{border-top:2px solid #8b5cf6;}.mod-010::before{background:#8b5cf6;}
+.mod-020{border-top:2px solid #ef4444;}.mod-020::before{background:#ef4444;}
+.mod-030{border-top:2px solid #6b7280;}.mod-030::before{background:#6b7280;}
+.mod-040{border-top:2px solid #06b6d4;}.mod-040::before{background:#06b6d4;}
+.mod-050{border-top:2px solid #60a5fa;}.mod-050::before{background:#60a5fa;}
+.mod-060{border-top:2px solid #f472b6;}.mod-060::before{background:#f472b6;}
+.mod-070{border-top:2px solid var(--amber);}.mod-070::before{background:var(--amber);}
+.mod-080{border-top:2px solid #78350f;}.mod-080::before{background:#78350f;}
+.mod-090{border-top:2px solid #065f46;}.mod-090::before{background:#065f46;}
+
+.mod-header{padding:12px 16px 8px;display:flex;justify-content:space-between;align-items:center;}
+.mod-num{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--silver2);letter-spacing:0.1em;}
+.mod-badge{width:20px;height:20px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:var(--silver2);}
+.mod-body{padding:8px 16px 16px;}
+.mod-icon-big{font-size:2rem;margin-bottom:8px;}
+.mod-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;color:var(--white);margin-bottom:5px;letter-spacing:0.04em;}
+.mod-desc-sm{font-size:0.78rem;color:var(--silver2);line-height:1.5;margin-bottom:12px;}
+.mod-meta{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--silver2);}
+.status-dot{width:5px;height:5px;border-radius:50%;}
+.sd-green{background:var(--green-hud);box-shadow:0 0 5px var(--green-hud);}
+.sd-amber{background:var(--amber);}
+
+/* SEARCH */
+.search-row{display:flex;gap:0;margin-top:32px;border:1px solid var(--border);width:100%;max-width:600px;}
+.search-label{background:rgba(0,212,255,0.08);padding:11px 18px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--cyan);border-right:1px solid var(--border);white-space:nowrap;}
+.search-input{flex:1;background:transparent;border:none;padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:0.82rem;color:var(--silver);outline:none;}
+.search-input::placeholder{color:var(--silver2);}
+.search-btn{padding:11px 20px;background:transparent;border:none;border-left:1px solid var(--border);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);cursor:none;transition:background .2s;}
+.search-btn:hover{background:rgba(0,212,255,0.08);}
+
+footer{position:relative;z-index:2;background:rgba(5,14,26,0.98);border-top:1px solid var(--border);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.foot-brand{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);}
+.foot-brand span{color:var(--cyan);}
+.foot-nav{display:flex;gap:16px;}
+.foot-nav a{font-family:'Rajdhani',sans-serif;font-size:0.78rem;color:var(--silver2);text-decoration:none;letter-spacing:0.07em;text-transform:uppercase;}
+.foot-nav a:hover{color:var(--cyan);}
+</style>
+</head>
+<body>
+<div class="cursor"><div class="c-dot"></div></div>
+<div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+<div class="hud-corner bl"></div><div class="hud-corner br"></div>
+
+<header>
+  <div class="header-top">
+    <a class="logo-link" href="avv-index.html">
+      <div class="logo-badge">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="14" stroke="#00d4ff" stroke-width="1"/>
+          <path d="M6 18h24M18 6v24" stroke="#00d4ff" stroke-width="0.8" opacity="0.4"/>
+          <path d="M10 12 L18 8 L26 12 L26 24 L18 28 L10 24 Z" stroke="#00d4ff" stroke-width="1.2" fill="none"/>
+          <text x="12" y="21" font-family="Rajdhani" font-size="7" font-weight="700" fill="#00d4ff">242</text>
+        </svg>
+      </div>
+      <div><div class="brand">AEROSIM 242</div><div class="tagline-sm">Académie de Vol Virtuel · Brazzaville</div></div>
+    </a>
+    <div class="hc">Formation Théorique &amp; Simulation de Vol</div>
+    <div class="hud-data"><div>FCBB <span>MAYA-MAYA</span></div><div>LAT <span>-4.2661°S</span></div></div>
+  </div>
+  <div class="header-nav">
+    <a class="nav-link" href="avv-index.html">Accueil</a>
+    <a class="nav-link active" href="avv-formations.html">Formations</a>
+    <a class="nav-link amber" href="avv-examen.html">Examens QCM</a>
+    <a class="nav-link" href="avv-connexion.html">Mon Compte</a>
+    <a class="nav-link" href="pont.html">⇄ Aérogligli</a>
+    <a class="nav-link cta" href="avv-connexion.html">Accès Cockpit →</a>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumb"><a href="avv-index.html">ACCUEIL</a> / FORMATIONS / PPL(A)</div>
+  <div class="page-title">Cours PPL(A)</div>
+  <div class="page-sub">// 9 MODULES · 200+ LEÇONS · CERTIFICATION AÉROGLIGLI</div>
+
+  <div class="tabs">
+    <a class="tab active" href="#">Modules</a>
+    <a class="tab" href="#">Résumés</a>
+    <a class="tab" href="#">Parcours Péda.</a>
+    <a class="tab" href="#">Vidéos</a>
+    <a class="tab" href="#">Photos</a>
+    <a class="tab" href="#">Notes</a>
+    <a class="tab" href="#">Quoi de neuf ?</a>
+  </div>
+
+  <div class="modules-grid">
+    <a class="mod-card mod-010" href="#">
+      <div class="mod-header"><span class="mod-num">// 010</span><span class="mod-badge">○</span></div>
+      <div class="mod-body">
+        <div class="mod-icon-big">🏛️</div>
+        <div class="mod-title">Réglementation / Droit aérien</div>
+        <div class="mod-desc-sm">Espaces aériens, OACI, SERA, DGAC, FIR Brazzaville, zones réglementées.</div>
+        <div class="mod-meta"><span class="status-dot sd-green"></span>DISPONIBLE · 32 LEÇONS</div>
+      </div>
+    </a>
+    <a class="mod-card mod-020" href="#">
+      <div class="mod-header"><span class="mod-num">// 020</span><span class="mod-badge">○</span></div>
+      <div class="mod-body">
+        <div class="mod-icon-big">✈️</div>
+        <div class="mod-title">Connaissance générale de l'aéronef</div>
+        <div class="mod-desc-sm">Cellule, motorisation, systèmes électrique, hydraulique et avionique.</div>
+        <div class="mod-meta"><span class="status-dot sd-green"></span>DISPONIBLE · 28 LEÇONS</div>
+      </div>
+    </a>
+    <a class="mod-card mod-030" href="#">
+      <div class="mod-header"><span class="mod-num">// 030</span><span class="mod-badge">○</span></div>
+      <div class="mod-body">
+        <div class="mod-icon-big">⚖️</div>
+        <div class="mod-title">Performances et préparation du vol</div>
+        <div class="mod-desc-sm">Masses, centrage, distances de décollage et d'atterrissage.</div>
+        <div class="mod-meta"><span class="status-dot sd-amber"></span>EN COURS · 24 LEÇONS</div>
+      </div>
+    </a>
+    <a class="mod-card mod-040" href="#">
+      <div class="mod-header"><span class="mod-num">// 040</span><span class="mod-badge">○</span></div>
+      <div class="mod-body">
+        <div class="mod-icon-big">🧠</div>
+        <div class="mod-title">Performance humaine et ses limites</div>
+        <div class="mod-desc-sm">Facteurs humains, hypoxie, désorientation, gestion du stress.</div>
+        <div class="mod-meta"><span class="status-dot sd-green"></span>DISPONIBLE · 18 LEÇONS</div>
+      </div>
+    </a>
+    <a class="mod-card mod-050" href="#">
+      <div class="mod-header"><span class="mod-num">// 050</span><span class="mod-badge">○</span></div>
+      <div class="mod-body">
+        <div class="mod-icon-big">⛅</div>
+        <div class="mod-title">Météorologie</div>
+        <div class="mod-desc-sm">Atmosphère tropicale, fronts, METAR/TAF, turbulences et givrage.</div>
+        <div class="mod-meta"><span class="status-dot sd-green"></span>DISPONIBLE · 30 LEÇONS</div>
+      </div>
+    </a>
+    <a class="mod-card mod-060" href="#">
+      <div class="mod-header"><span class="mod-num">// 060</span><span class="mod-badge">○</span></div>
+      <div class="mod-body">
+        <div class="mod-icon-big">🧭</div>
+        <div class="mod-title">Navigation</div>
+        <div class="mod-desc-sm">Cartographie Afrique centrale, cap, VOR/NDB, GPS, plan de vol VFR.</div>
+        <div class="mod-meta"><span class="status-dot sd-green"></span>DISPONIBLE · 26 LEÇONS</div>
+      </div>
+    </a>
+    <a class="mod-card mod-070" href="#">
+      <div class="mod-header"><span class="mod-num">// 070</span><span class="mod-badge">○</span></div>
+      <div class="mod-body">
+        <div class="mod-icon-big">🔥</div>
+        <div class="mod-title">Procédures opérationnelles</div>
+        <div class="mod-desc-sm">Check-lists, urgences, signaux de piste, phraséologie locale.</div>
+        <div class="mod-meta"><span class="status-dot sd-amber"></span>EN COURS · 20 LEÇONS</div>
+      </div>
+    </a>
+    <a class="mod-card mod-080" href="#">
+      <div class="mod-header"><span class="mod-num">// 080</span><span class="mod-badge">○</span></div>
+      <div class="mod-body">
+        <div class="mod-icon-big">🛫</div>
+        <div class="mod-title">Principes du vol</div>
+        <div class="mod-desc-sm">Aérodynamique, portance, traînée, virages, vrilles et récupération.</div>
+        <div class="mod-meta"><span class="status-dot sd-green"></span>DISPONIBLE · 22 LEÇONS</div>
+      </div>
+    </a>
+    <a class="mod-card mod-090" href="#">
+      <div class="mod-header"><span class="mod-num">// 090</span><span class="mod-badge">○</span></div>
+      <div class="mod-body">
+        <div class="mod-icon-big">🎧</div>
+        <div class="mod-title">Communications</div>
+        <div class="mod-desc-sm">Radiotéléphonie, phraséologie OACI, codes transponder, urgences.</div>
+        <div class="mod-meta"><span class="status-dot sd-green"></span>DISPONIBLE · 16 LEÇONS</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="search-row">
+    <span class="search-label">RECHERCHE</span>
+    <input class="search-input" type="text" placeholder="Mots-clés séparés par des espaces...">
+    <button class="search-btn">ENVOYER</button>
+  </div>
+</main>
+
+<footer>
+  <div class="foot-brand"><span>AEROSIM 242</span> · Brazzaville · FCBB</div>
+  <div class="foot-nav">
+    <a href="avv-index.html">Accueil</a>
+    <a href="avv-examen.html">Examens</a>
+    <a href="pont.html">Aérogligli</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+<script>
+const c=document.querySelector('.cursor');
+document.addEventListener('mousemove',e=>{c.style.left=e.clientX+'px';c.style.top=e.clientY+'px';});
+</script>
+</body>
+</html>

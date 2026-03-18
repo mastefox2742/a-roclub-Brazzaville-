@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroSim 242 – Accès Cockpit</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--navy:#050e1a;--cyan:#00d4ff;--amber:#f0a500;--silver:#a8bcc8;--silver2:#5a7484;--green-hud:#39ff85;--white:#e8f4ff;--border:rgba(0,212,255,0.15);}
+*{cursor:none!important;}
+.cursor{position:fixed;width:28px;height:28px;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);}
+.cursor::before,.cursor::after{content:'';position:absolute;background:var(--cyan);}
+.cursor::before{width:1px;height:100%;left:50%;top:0;transform:translateX(-50%);}
+.cursor::after{width:100%;height:1px;top:50%;left:0;transform:translateY(-50%);}
+.cursor .c-dot{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--cyan);top:50%;left:50%;transform:translate(-50%,-50%);}
+body{font-family:'Rajdhani',sans-serif;background:var(--navy);color:var(--silver);min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+.hud-corner{position:fixed;width:50px;height:50px;pointer-events:none;z-index:8;}
+.hud-corner::before,.hud-corner::after{content:'';position:absolute;background:rgba(0,212,255,0.4);}
+.hud-corner.tl{top:10px;left:10px;}.hud-corner.tl::before{width:16px;height:1px;top:0;left:0;}.hud-corner.tl::after{width:1px;height:16px;top:0;left:0;}
+.hud-corner.tr{top:10px;right:10px;}.hud-corner.tr::before{width:16px;height:1px;top:0;right:0;}.hud-corner.tr::after{width:1px;height:16px;top:0;right:0;}
+.hud-corner.bl{bottom:10px;left:10px;}.hud-corner.bl::before{width:16px;height:1px;bottom:0;left:0;}.hud-corner.bl::after{width:1px;height:16px;bottom:0;left:0;}
+.hud-corner.br{bottom:10px;right:10px;}.hud-corner.br::before{width:16px;height:1px;bottom:0;right:0;}.hud-corner.br::after{width:1px;height:16px;bottom:0;right:0;}
+
+header{position:relative;z-index:10;background:rgba(5,14,26,0.97);border-bottom:1px solid var(--border);}
+.header-top{display:flex;align-items:center;padding:14px 40px;gap:24px;border-bottom:1px solid rgba(0,212,255,0.07);}
+.logo-link{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.logo-badge{width:48px;height:48px;border:1px solid rgba(0,212,255,0.4);border-radius:3px;display:flex;align-items:center;justify-content:center;background:rgba(0,212,255,0.05);}
+.logo-badge svg{width:32px;height:32px;}
+.brand{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.5rem;color:var(--cyan);letter-spacing:0.1em;}
+.tagline-sm{font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--silver2);letter-spacing:0.12em;text-transform:uppercase;}
+.hc{flex:1;text-align:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--white);}
+.header-nav{display:flex;padding:0 40px;}
+.nav-link{padding:10px 18px;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.86rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--silver2);text-decoration:none;border-right:1px solid rgba(0,212,255,0.07);position:relative;transition:color .2s,background .2s;}
+.nav-link::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--cyan);transition:width .3s;}
+.nav-link:hover{color:var(--cyan);background:rgba(0,212,255,0.04);}
+.nav-link:hover::after{width:100%;}
+.nav-link.amber{color:var(--amber);}
+.nav-link.amber:hover{color:var(--amber);}
+.nav-link.amber::after{background:var(--amber);}
+.nav-link.active{color:var(--cyan);}
+.nav-link.active::after{width:100%;}
+.nav-link.cta{margin-left:auto;color:var(--navy);background:var(--cyan);font-weight:700;border-right:none;}
+.nav-link.cta:hover{background:#33e0ff;}
+.nav-link.cta::after{display:none;}
+
+main{flex:1;position:relative;z-index:2;display:flex;align-items:center;justify-content:center;padding:60px 40px;}
+
+.login-wrap{width:100%;max-width:480px;}
+.login-header{margin-bottom:28px;text-align:center;}
+.login-header .lh-tag{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--cyan);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:8px;}
+.login-header h2{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:2rem;color:var(--white);letter-spacing:0.08em;text-transform:uppercase;}
+.login-header p{font-size:0.85rem;color:var(--silver2);margin-top:5px;}
+
+.login-box{background:rgba(9,21,37,0.9);border:1px solid var(--border);padding:28px;position:relative;}
+.login-box::before{content:'';position:absolute;top:-1px;left:20px;width:50px;height:2px;background:var(--cyan);}
+.login-box::after{content:'';position:absolute;bottom:-1px;right:20px;width:50px;height:2px;background:var(--cyan);}
+
+.info-block{background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.12);padding:12px 16px;margin-bottom:22px;font-size:0.83rem;color:var(--silver2);line-height:1.6;}
+.info-block span{color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:0.72rem;}
+
+.form-group{margin-bottom:18px;}
+.form-group label{display:block;font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:7px;}
+.form-group input{width:100%;background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.2);padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:0.85rem;color:var(--white);outline:none;transition:border-color .2s;}
+.form-group input:focus{border-color:var(--cyan);}
+.form-group input::placeholder{color:var(--silver2);}
+.input-row{position:relative;}
+.input-row input{padding-right:42px;}
+.toggle-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--silver2);font-size:1rem;transition:color .2s;}
+.toggle-eye:hover{color:var(--cyan);}
+
+.forgot{display:block;text-align:right;font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--cyan);text-decoration:none;letter-spacing:0.08em;margin-top:-10px;margin-bottom:16px;}
+.forgot:hover{text-decoration:underline;}
+
+.check-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.check-row input[type=checkbox]{appearance:none;width:14px;height:14px;border:1px solid rgba(0,212,255,0.3);background:transparent;position:relative;flex-shrink:0;}
+.check-row input[type=checkbox]:checked{background:var(--cyan);}
+.check-row input[type=checkbox]:checked::after{content:'✓';position:absolute;top:-2px;left:1px;font-size:0.7rem;color:var(--navy);}
+.check-row label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--silver2);letter-spacing:0.07em;}
+
+.divider{border:none;border-top:1px solid rgba(0,212,255,0.1);margin:18px 0;}
+
+.btn-connect{display:block;width:100%;padding:14px;background:var(--cyan);border:none;color:var(--navy);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;letter-spacing:0.16em;text-transform:uppercase;text-align:center;text-decoration:none;transition:background .2s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));}
+.btn-connect:hover{background:#33e0ff;}
+
+.register-link{text-align:center;margin-top:14px;font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);letter-spacing:0.07em;}
+.register-link a{color:var(--cyan);text-decoration:none;}
+.register-link a:hover{text-decoration:underline;}
+
+footer{position:relative;z-index:2;background:rgba(5,14,26,0.98);border-top:1px solid var(--border);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.foot-brand{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);}
+.foot-brand span{color:var(--cyan);}
+.foot-nav{display:flex;gap:16px;}
+.foot-nav a{font-family:'Rajdhani',sans-serif;font-size:0.78rem;color:var(--silver2);text-decoration:none;letter-spacing:0.07em;text-transform:uppercase;}
+.foot-nav a:hover{color:var(--cyan);}
+</style>
+</head>
+<body>
+<div class="cursor"><div class="c-dot"></div></div>
+<div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+<div class="hud-corner bl"></div><div class="hud-corner br"></div>
+
+<header>
+  <div class="header-top">
+    <a class="logo-link" href="avv-index.html">
+      <div class="logo-badge">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="14" stroke="#00d4ff" stroke-width="1"/>
+          <path d="M6 18h24M18 6v24" stroke="#00d4ff" stroke-width="0.8" opacity="0.4"/>
+          <path d="M10 12 L18 8 L26 12 L26 24 L18 28 L10 24 Z" stroke="#00d4ff" stroke-width="1.2" fill="none"/>
+          <text x="12" y="21" font-family="Rajdhani" font-size="7" font-weight="700" fill="#00d4ff">242</text>
+        </svg>
+      </div>
+      <div><div class="brand">AEROSIM 242</div><div class="tagline-sm">Académie de Vol Virtuel · Brazzaville</div></div>
+    </a>
+    <div class="hc">Accès Cockpit — Authentification</div>
+  </div>
+  <div class="header-nav">
+    <a class="nav-link" href="avv-index.html">Accueil</a>
+    <a class="nav-link" href="avv-formations.html">Formations</a>
+    <a class="nav-link amber" href="avv-examen.html">Examens QCM</a>
+    <a class="nav-link active" href="avv-connexion.html">Mon Compte</a>
+    <a class="nav-link" href="pont.html">⇄ Aérogligli</a>
+    <a class="nav-link cta" href="avv-connexion.html">Accès Cockpit →</a>
+  </div>
+</header>
+
+<main>
+  <div class="login-wrap">
+    <div class="login-header">
+      <div class="lh-tag">// AUTHENTIFICATION · SYS.242</div>
+      <h2>Accès Cockpit</h2>
+      <p>Connectez-vous à votre espace de formation AeroSim 242</p>
+    </div>
+    <div class="login-box">
+      <div class="info-block">
+        <span>ACCÈS ÉLÈVE</span> — Réservé aux pilotes-stagiaires disposant d'un compte AeroSim 242 actif ou d'un abonnement e-learning en cours.
+      </div>
+      <div class="form-group">
+        <label>Identifiant — Email</label>
+        <input type="email" placeholder="pilote@aerosim242.cg">
+      </div>
+      <div class="form-group">
+        <label>Code d'accès — Mot de passe</label>
+        <div class="input-row">
+          <input type="password" id="pw" placeholder="••••••••••">
+          <button class="toggle-eye" onclick="togglePw()">👁</button>
+        </div>
+      </div>
+      <a class="forgot" href="#">mot de passe oublié ?</a>
+      <div class="check-row">
+        <input type="checkbox" id="stay">
+        <label for="stay">MAINTENIR LA SESSION ACTIVE</label>
+      </div>
+      <hr class="divider">
+      <a class="btn-connect" href="avv-formations.html">INITIALISER LA CONNEXION</a>
+      <div class="register-link">
+        Pas encore de compte ? <a href="#">Créer un accès pilote</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="foot-brand"><span>AEROSIM 242</span> · Brazzaville · FCBB MAYA-MAYA</div>
+  <div class="foot-nav">
+    <a href="avv-index.html">Accueil</a>
+    <a href="pont.html">Aérogligli</a>
+    <a href="#">Contact</a>
+    <a href="#">Mentions légales</a>
+  </div>
+</footer>
+<script>
+const c=document.querySelector('.cursor');
+document.addEventListener('mousemove',e=>{c.style.left=e.clientX+'px';c.style.top=e.clientY+'px';});
+function togglePw(){const p=document.getElementById('pw');p.type=p.type==='password'?'text':'password';}
+</script>
+</body>
+</html>

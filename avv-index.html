@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroSim 242 – Académie de Vol Virtuel · Brazzaville</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#050e1a;--navy2:#091525;--navy3:#0d1f33;
+  --cyan:#00d4ff;--cyan2:#0099cc;
+  --amber:#f0a500;--amber2:#c07800;
+  --silver:#a8bcc8;--silver2:#5a7484;
+  --green-hud:#39ff85;--white:#e8f4ff;
+  --grid:rgba(0,212,255,0.05);
+}
+*{cursor:none!important;}
+.cursor{position:fixed;width:28px;height:28px;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);}
+.cursor::before,.cursor::after{content:'';position:absolute;background:var(--cyan);}
+.cursor::before{width:1px;height:100%;left:50%;top:0;transform:translateX(-50%);}
+.cursor::after{width:100%;height:1px;top:50%;left:0;transform:translateY(-50%);}
+.cursor .c-dot{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--cyan);top:50%;left:50%;transform:translate(-50%,-50%);}
+
+body{font-family:'Rajdhani',sans-serif;background:var(--navy);color:var(--silver);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);pointer-events:none;z-index:1;}
+
+/* HUD CORNERS */
+.hud-corner{position:fixed;width:50px;height:50px;pointer-events:none;z-index:8;}
+.hud-corner::before,.hud-corner::after{content:'';position:absolute;background:rgba(0,212,255,0.5);}
+.hud-corner.tl{top:10px;left:10px;}.hud-corner.tl::before{width:18px;height:1px;top:0;left:0;}.hud-corner.tl::after{width:1px;height:18px;top:0;left:0;}
+.hud-corner.tr{top:10px;right:10px;}.hud-corner.tr::before{width:18px;height:1px;top:0;right:0;}.hud-corner.tr::after{width:1px;height:18px;top:0;right:0;}
+.hud-corner.bl{bottom:10px;left:10px;}.hud-corner.bl::before{width:18px;height:1px;bottom:0;left:0;}.hud-corner.bl::after{width:1px;height:18px;bottom:0;left:0;}
+.hud-corner.br{bottom:10px;right:10px;}.hud-corner.br::before{width:18px;height:1px;bottom:0;right:0;}.hud-corner.br::after{width:1px;height:18px;bottom:0;right:0;}
+
+/* HEADER */
+header{position:relative;z-index:10;background:rgba(5,14,26,0.97);border-bottom:1px solid rgba(0,212,255,0.18);}
+.header-top{display:flex;align-items:center;padding:14px 40px;gap:24px;border-bottom:1px solid rgba(0,212,255,0.08);}
+.logo-link{display:flex;align-items:center;gap:14px;text-decoration:none;}
+.logo-badge{width:54px;height:54px;border:1px solid rgba(0,212,255,0.4);border-radius:4px;display:flex;align-items:center;justify-content:center;background:rgba(0,212,255,0.06);flex-shrink:0;position:relative;}
+.logo-badge::before{content:'';position:absolute;top:-1px;left:8px;width:30px;height:1px;background:var(--cyan);}
+.logo-badge svg{width:36px;height:36px;}
+.logo-text-wrap .brand{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.75rem;color:var(--cyan);letter-spacing:0.1em;line-height:1;}
+.logo-text-wrap .tagline{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--silver2);letter-spacing:0.14em;text-transform:uppercase;}
+.header-center{flex:1;text-align:center;}
+.header-center h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.35rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--white);}
+.header-center p{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--silver2);letter-spacing:0.1em;margin-top:3px;}
+.header-hud{text-align:right;font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);line-height:1.8;}
+.header-hud span{color:var(--cyan);}
+
+.header-nav{display:flex;padding:0 40px;}
+.nav-link{padding:11px 20px;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.88rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--silver2);text-decoration:none;border-right:1px solid rgba(0,212,255,0.08);position:relative;transition:color .2s,background .2s;}
+.nav-link::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--cyan);transition:width .3s;}
+.nav-link:hover{color:var(--cyan);background:rgba(0,212,255,0.04);}
+.nav-link:hover::after{width:100%;}
+.nav-link.amber{color:var(--amber2);}
+.nav-link.amber::after{background:var(--amber);}
+.nav-link.amber:hover{color:var(--amber);}
+.nav-link.active{color:var(--cyan);}
+.nav-link.active::after{width:100%;}
+.nav-link.cta{margin-left:auto;color:var(--navy);background:var(--cyan);font-weight:700;border-right:none;padding:11px 24px;}
+.nav-link.cta:hover{background:#33e0ff;}
+.nav-link.cta::after{display:none;}
+
+/* HERO */
+.hero{position:relative;z-index:2;padding:56px 60px 40px;display:grid;grid-template-columns:1fr 340px;gap:48px;align-items:start;}
+.hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--cyan);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';display:inline-block;width:28px;height:1px;background:var(--cyan);}
+.hero-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(2.4rem,4vw,3.6rem);color:var(--white);line-height:1.0;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:10px;}
+.hero-title .accent{color:var(--cyan);}
+.hero-title .amber{color:var(--amber);}
+.hero-sub{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;color:var(--amber);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:18px;}
+.hero-desc{font-size:1rem;color:var(--silver);line-height:1.75;max-width:500px;margin-bottom:30px;}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;}
+.btn-cyan{display:inline-block;padding:12px 26px;background:var(--cyan);color:var(--navy);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.9rem;letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));transition:background .2s,transform .15s;}
+.btn-cyan:hover{background:#33e0ff;transform:translateY(-2px);}
+.btn-amber{display:inline-block;padding:12px 26px;background:transparent;color:var(--amber);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.9rem;letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;border:1px solid var(--amber);transition:background .2s,transform .15s;}
+.btn-amber:hover{background:rgba(240,165,0,0.1);transform:translateY(-2px);}
+
+/* PARTNER LINK BUTTON */
+.btn-partner{display:inline-flex;align-items:center;gap:10px;padding:12px 26px;background:rgba(0,212,255,0.06);color:var(--silver);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.88rem;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(0,212,255,0.25);transition:all .2s;margin-top:10px;}
+.btn-partner:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.1);}
+.btn-partner .arrow{font-size:0.8rem;transition:transform .2s;}
+.btn-partner:hover .arrow{transform:translateX(4px);}
+
+/* HUD PANEL */
+.hud-panel{background:rgba(0,212,255,0.03);border:1px solid rgba(0,212,255,0.18);padding:18px;position:relative;}
+.hud-panel::before{content:'';position:absolute;top:-1px;left:16px;width:50px;height:2px;background:var(--cyan);}
+.hp-title{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--cyan);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:14px;}
+.hp-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(0,212,255,0.07);font-family:'Share Tech Mono',monospace;font-size:0.72rem;}
+.hp-row:last-child{border-bottom:none;}
+.hp-lbl{color:var(--silver2);letter-spacing:0.06em;}
+.hp-val{color:var(--cyan);}
+.hp-val.amber{color:var(--amber);}
+.hp-val.green{color:var(--green-hud);}
+.hp-bar-wrap{margin-top:12px;}
+.hp-bar-lbl{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--silver2);margin-bottom:4px;letter-spacing:0.07em;}
+.hp-bar{height:3px;background:rgba(0,212,255,0.12);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.hp-bar-fill{height:100%;background:var(--cyan);border-radius:2px;}
+.hp-bar-fill.amber{background:var(--amber);}
+
+/* STATS */
+.stats{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(0,212,255,0.12);border-bottom:1px solid rgba(0,212,255,0.12);margin:0 60px;}
+.stat{padding:18px;border-right:1px solid rgba(0,212,255,0.08);text-align:center;}
+.stat:last-child{border-right:none;}
+.stat-num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:2rem;color:var(--cyan);}
+.stat-lbl{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--silver2);text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;}
+
+/* SECTIONS */
+.section{position:relative;z-index:2;padding:44px 60px;}
+.sec-header{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
+.sec-line{flex:1;height:1px;background:rgba(0,212,255,0.15);}
+.sec-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;color:var(--white);letter-spacing:0.15em;text-transform:uppercase;}
+.sec-tag{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--cyan);padding:2px 7px;border:1px solid rgba(0,212,255,0.28);letter-spacing:0.1em;}
+
+/* MODULE CARDS */
+.mod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.mod-card{background:rgba(9,21,37,0.85);border:1px solid rgba(0,212,255,0.12);padding:18px;text-decoration:none;color:inherit;transition:border-color .3s,transform .2s,background .3s;position:relative;overflow:hidden;display:block;}
+.mod-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;background:var(--cyan);transform:scaleY(0);transform-origin:top;transition:transform .3s;}
+.mod-card:hover{border-color:rgba(0,212,255,0.35);background:rgba(0,212,255,0.04);transform:translateY(-2px);}
+.mod-card:hover::before{transform:scaleY(1);}
+.mod-id{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);letter-spacing:0.1em;margin-bottom:8px;}
+.mod-icon{font-size:1.7rem;margin-bottom:8px;}
+.mod-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.98rem;color:var(--white);margin-bottom:5px;}
+.mod-desc{font-size:0.8rem;color:var(--silver2);line-height:1.5;}
+.mod-footer{margin-top:12px;display:flex;align-items:center;gap:7px;font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--silver2);}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--silver2);}
+.dot.green{background:var(--green-hud);box-shadow:0 0 5px var(--green-hud);}
+.dot.amber{background:var(--amber);}
+
+/* PARTNER BRIDGE SECTION */
+.bridge-band{position:relative;z-index:2;margin:0 60px 44px;border:1px solid rgba(240,165,0,0.25);background:rgba(240,165,0,0.04);padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+.bridge-band::before{content:'';position:absolute;top:-1px;left:20px;width:60px;height:2px;background:var(--amber);}
+.bridge-text h3{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.1rem;color:var(--white);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;}
+.bridge-text p{font-size:0.85rem;color:var(--silver2);max-width:480px;line-height:1.6;}
+.bridge-badge{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--amber);padding:3px 9px;border:1px solid rgba(240,165,0,0.4);letter-spacing:0.1em;white-space:nowrap;}
+
+/* FOOTER */
+footer{position:relative;z-index:2;background:rgba(5,14,26,0.98);border-top:1px solid rgba(0,212,255,0.12);padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.foot-brand{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--silver2);letter-spacing:0.1em;}
+.foot-brand span{color:var(--cyan);}
+.foot-nav{display:flex;gap:18px;flex-wrap:wrap;}
+.foot-nav a{font-family:'Rajdhani',sans-serif;font-size:0.8rem;color:var(--silver2);text-decoration:none;letter-spacing:0.07em;text-transform:uppercase;transition:color .2s;}
+.foot-nav a:hover{color:var(--cyan);}
+.foot-coords{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);letter-spacing:0.06em;}
+.foot-coords span{color:var(--amber);}
+
+/* ANIM */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.hero-left{animation:fadeUp .7s ease both;}
+.hero-right{animation:fadeUp .7s .15s ease both;}
+.stats{animation:fadeUp .7s .25s ease both;}
+.blink{animation:blink 1.2s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+</style>
+</head>
+<body>
+
+<div class="cursor"><div class="c-dot"></div></div>
+<div class="hud-corner tl"></div>
+<div class="hud-corner tr"></div>
+<div class="hud-corner bl"></div>
+<div class="hud-corner br"></div>
+
+<header>
+  <div class="header-top">
+    <a class="logo-link" href="avv-index.html">
+      <div class="logo-badge">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="14" stroke="#00d4ff" stroke-width="1"/>
+          <path d="M6 18h24M18 6v24" stroke="#00d4ff" stroke-width="0.8" opacity="0.4"/>
+          <path d="M10 12 L18 8 L26 12 L26 24 L18 28 L10 24 Z" stroke="#00d4ff" stroke-width="1.2" fill="none"/>
+          <text x="12" y="21" font-family="Rajdhani" font-size="7" font-weight="700" fill="#00d4ff">242</text>
+        </svg>
+      </div>
+      <div class="logo-text-wrap">
+        <div class="brand">AEROSIM 242</div>
+        <div class="tagline">Académie de Vol Virtuel · Brazzaville</div>
+      </div>
+    </a>
+    <div class="header-center">
+      <h1>Formation Théorique &amp; Simulation de Vol</h1>
+      <p>SYSTÈME OPÉRATIONNEL · BRAZZAVILLE, CONGO · <span class="blink">●</span> EN LIGNE</p>
+    </div>
+    <div class="header-hud">
+      <div>LAT <span>-4.2661°S</span></div>
+      <div>LON <span>015.2835°E</span></div>
+      <div>FCBB MAYA-MAYA</div>
+      <div>ALT <span>1050 FT</span></div>
+    </div>
+  </div>
+  <div class="header-nav">
+    <a class="nav-link active" href="avv-index.html">Accueil</a>
+    <a class="nav-link" href="avv-formations.html">Formations</a>
+    <a class="nav-link amber" href="avv-examen.html">Examens QCM</a>
+    <a class="nav-link" href="avv-connexion.html">Mon Compte</a>
+    <a class="nav-link" href="pont.html">⇄ Aérogligli</a>
+    <a class="nav-link cta" href="avv-connexion.html">Accès Cockpit →</a>
+  </div>
+</header>
+
+<div class="page-wrap">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">SYS·ID·242·BZV · Initialisation complète</div>
+      <h2 class="hero-title">
+        Voler,<br>
+        c'est d'abord<br>
+        <span class="accent">comprendre</span><br>
+        <span class="amber">le ciel</span>
+      </h2>
+      <div class="hero-sub">Formation PPL(A) · LAPL · BIA · ULM — Brazzaville</div>
+      <p class="hero-desc">
+        AeroSim 242 est l'académie de vol virtuel de Brazzaville, conçue pour les futurs pilotes congolais et francophones d'Afrique centrale. Maîtrisez la théorie aéronautique avec des cours interactifs, des QCM certifiants et une interface inspirée des cockpits modernes.
+      </p>
+      <div class="hero-btns">
+        <a class="btn-cyan" href="avv-formations.html">Commencer la formation</a>
+        <a class="btn-amber" href="avv-examen.html">Passer un QCM</a>
+      </div>
+      <a class="btn-partner" href="pont.html">
+        <span>Partenaire certifié Aérogligli</span>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+    <div class="hero-right">
+      <div class="hud-panel">
+        <div class="hp-title">// TABLEAU DE BORD · SYS.242</div>
+        <div class="hp-row"><span class="hp-lbl">STATUT</span><span class="hp-val green">OPÉRATIONNEL</span></div>
+        <div class="hp-row"><span class="hp-lbl">ÉLÈVES ACTIFS</span><span class="hp-val">247</span></div>
+        <div class="hp-row"><span class="hp-lbl">MODULES CHARGÉS</span><span class="hp-val">09 / 09</span></div>
+        <div class="hp-row"><span class="hp-lbl">QCM DISPONIBLES</span><span class="hp-val amber">1 840</span></div>
+        <div class="hp-row"><span class="hp-lbl">AÉRODROME BASE</span><span class="hp-val">FCBB MAYA-MAYA</span></div>
+        <div class="hp-row"><span class="hp-lbl">PARTENAIRE</span><span class="hp-val">AÉROGLIGLI FR</span></div>
+        <div class="hp-row"><span class="hp-lbl">AGRÉMENT</span><span class="hp-val green">ATO·FR·0221</span></div>
+        <div class="hp-bar-wrap">
+          <div class="hp-bar-lbl"><span>PROGRESSION PROMO 2026</span><span>68%</span></div>
+          <div class="hp-bar"><div class="hp-bar-fill" style="width:68%"></div></div>
+          <div class="hp-bar-lbl"><span>TAUX DE RÉUSSITE QCM</span><span>84%</span></div>
+          <div class="hp-bar"><div class="hp-bar-fill amber" style="width:84%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num">09</div><div class="stat-lbl">Modules PPL(A)</div></div>
+    <div class="stat"><div class="stat-num">1840</div><div class="stat-lbl">Questions QCM</div></div>
+    <div class="stat"><div class="stat-num">247</div><div class="stat-lbl">Élèves inscrits</div></div>
+    <div class="stat"><div class="stat-num">84%</div><div class="stat-lbl">Taux de réussite</div></div>
+  </div>
+
+  <!-- MODULES -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-tag">01</div>
+      <div class="sec-title">Modules de Formation PPL(A)</div>
+      <div class="sec-line"></div>
+      <div class="sec-tag">LAPL / BIA / ULM</div>
+    </div>
+    <div class="mod-grid">
+      <a class="mod-card" href="avv-formations.html">
+        <div class="mod-id">// MODULE 010</div>
+        <div class="mod-icon">🏛️</div>
+        <div class="mod-name">Réglementation / Droit aérien</div>
+        <div class="mod-desc">Espaces aériens, règles OACI, SERA, réglementation DGAC et nationale.</div>
+        <div class="mod-footer"><span class="dot green"></span>DISPONIBLE · 32 LEÇONS</div>
+      </a>
+      <a class="mod-card" href="avv-formations.html">
+        <div class="mod-id">// MODULE 020</div>
+        <div class="mod-icon">✈️</div>
+        <div class="mod-name">Connaissance générale de l'aéronef</div>
+        <div class="mod-desc">Cellule, moteur, systèmes hydrauliques, électrique, avionique de base.</div>
+        <div class="mod-footer"><span class="dot green"></span>DISPONIBLE · 28 LEÇONS</div>
+      </a>
+      <a class="mod-card" href="avv-formations.html">
+        <div class="mod-id">// MODULE 030</div>
+        <div class="mod-icon">⚖️</div>
+        <div class="mod-name">Performances et préparation du vol</div>
+        <div class="mod-desc">Masses, centrage, distances de décollage et d'atterrissage, carburant.</div>
+        <div class="mod-footer"><span class="dot amber"></span>EN COURS · 24 LEÇONS</div>
+      </a>
+      <a class="mod-card" href="avv-formations.html">
+        <div class="mod-id">// MODULE 040</div>
+        <div class="mod-icon">🧠</div>
+        <div class="mod-name">Performance humaine et ses limites</div>
+        <div class="mod-desc">Facteurs humains, hypoxie, désorientation spatiale, gestion du stress.</div>
+        <div class="mod-footer"><span class="dot green"></span>DISPONIBLE · 18 LEÇONS</div>
+      </a>
+      <a class="mod-card" href="avv-formations.html">
+        <div class="mod-id">// MODULE 050</div>
+        <div class="mod-icon">⛅</div>
+        <div class="mod-name">Météorologie</div>
+        <div class="mod-desc">Atmosphère, fronts, METAR/TAF, vents, turbulences, givrage en vol.</div>
+        <div class="mod-footer"><span class="dot green"></span>DISPONIBLE · 30 LEÇONS</div>
+      </a>
+      <a class="mod-card" href="avv-formations.html">
+        <div class="mod-id">// MODULE 060</div>
+        <div class="mod-icon">🧭</div>
+        <div class="mod-name">Navigation</div>
+        <div class="mod-desc">Cartographie, cap, vent, VOR, NDB, GPS, plan de vol VFR.</div>
+        <div class="mod-footer"><span class="dot green"></span>DISPONIBLE · 26 LEÇONS</div>
+      </a>
+      <a class="mod-card" href="avv-formations.html">
+        <div class="mod-id">// MODULE 070</div>
+        <div class="mod-icon">🔥</div>
+        <div class="mod-name">Procédures opérationnelles</div>
+        <div class="mod-desc">Sécurité, check-lists, urgences, pistes, signaux et phraséologie.</div>
+        <div class="mod-footer"><span class="dot amber"></span>EN COURS · 20 LEÇONS</div>
+      </a>
+      <a class="mod-card" href="avv-formations.html">
+        <div class="mod-id">// MODULE 080</div>
+        <div class="mod-icon">🛫</div>
+        <div class="mod-name">Principes du vol</div>
+        <div class="mod-desc">Aérodynamique, portance, traînée, effets moteur, virages et vrilles.</div>
+        <div class="mod-footer"><span class="dot green"></span>DISPONIBLE · 22 LEÇONS</div>
+      </a>
+      <a class="mod-card" href="avv-formations.html">
+        <div class="mod-id">// MODULE 090</div>
+        <div class="mod-icon">🎧</div>
+        <div class="mod-name">Communications</div>
+        <div class="mod-desc">Radiotéléphonie, phraséologie OACI, codes transponder, urgences radio.</div>
+        <div class="mod-footer"><span class="dot green"></span>DISPONIBLE · 16 LEÇONS</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- PARTNER BRIDGE -->
+  <div class="bridge-band">
+    <div class="bridge-text">
+      <h3>Formation certifiée en partenariat avec Aérogligli France</h3>
+      <p>AeroSim 242 s'appuie sur le contenu pédagogique d'Aérogligli, ATO agréé DGAC (FR.ATO.0221). Accédez directement à la plateforme française pour des ressources complémentaires, QCM officiels et parcours pédagogiques avancés.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+      <div class="bridge-badge">PARTENAIRE OFFICIEL · ATO FR.ATO.0221</div>
+      <a class="btn-amber" href="pont.html" style="white-space:nowrap;">Accéder à Aérogligli →</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="foot-brand"><span>AEROSIM 242</span> · Académie de Vol Virtuel · Brazzaville, Congo · <span>-4.266°S / 015.283°E</span></div>
+  <div class="foot-nav">
+    <a href="#">À propos</a>
+    <a href="#">Formations</a>
+    <a href="#">Examens</a>
+    <a href="pont.html">Aérogligli</a>
+    <a href="#">Contact</a>
+    <a href="#">Mentions légales</a>
+  </div>
+  <div class="foot-coords">FCBB <span>MAYA-MAYA</span> · SYS.ID <span>242</span> · v2.6.0</div>
+</footer>
+
+<script>
+const c = document.querySelector('.cursor');
+document.addEventListener('mousemove', e => {
+  c.style.left = e.clientX + 'px';
+  c.style.top = e.clientY + 'px';
+});
+</script>
+</body>
+</html>
