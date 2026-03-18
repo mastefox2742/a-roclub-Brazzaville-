@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroSim 242 – Créer un compte</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--navy:#050e1a;--cyan:#00d4ff;--amber:#f0a500;--silver:#a8bcc8;--silver2:#5a7484;--green-hud:#39ff85;--white:#e8f4ff;--border:rgba(0,212,255,0.15);}
+*{cursor:none!important;}
+.cursor{position:fixed;width:28px;height:28px;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);}
+.cursor::before,.cursor::after{content:'';position:absolute;background:var(--cyan);}
+.cursor::before{width:1px;height:100%;left:50%;top:0;transform:translateX(-50%);}
+.cursor::after{width:100%;height:1px;top:50%;left:0;transform:translateY(-50%);}
+.cursor .c-dot{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--cyan);top:50%;left:50%;transform:translate(-50%,-50%);}
+body{font-family:'Rajdhani',sans-serif;background:var(--navy);color:var(--silver);min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+.hud-corner{position:fixed;width:50px;height:50px;pointer-events:none;z-index:8;}
+.hud-corner::before,.hud-corner::after{content:'';position:absolute;background:rgba(0,212,255,0.4);}
+.hud-corner.tl{top:10px;left:10px;}.hud-corner.tl::before{width:16px;height:1px;top:0;left:0;}.hud-corner.tl::after{width:1px;height:16px;top:0;left:0;}
+.hud-corner.tr{top:10px;right:10px;}.hud-corner.tr::before{width:16px;height:1px;top:0;right:0;}.hud-corner.tr::after{width:1px;height:16px;top:0;right:0;}
+.hud-corner.bl{bottom:10px;left:10px;}.hud-corner.bl::before{width:16px;height:1px;bottom:0;left:0;}.hud-corner.bl::after{width:1px;height:16px;bottom:0;left:0;}
+.hud-corner.br{bottom:10px;right:10px;}.hud-corner.br::before{width:16px;height:1px;bottom:0;right:0;}.hud-corner.br::after{width:1px;height:16px;bottom:0;right:0;}
+
+header{position:relative;z-index:10;background:rgba(5,14,26,0.97);border-bottom:1px solid var(--border);}
+.header-top{display:flex;align-items:center;padding:14px 40px;gap:24px;border-bottom:1px solid rgba(0,212,255,0.07);}
+.logo-link{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.logo-badge{width:48px;height:48px;border:1px solid rgba(0,212,255,0.4);border-radius:3px;display:flex;align-items:center;justify-content:center;background:rgba(0,212,255,0.05);}
+.logo-badge svg{width:32px;height:32px;}
+.brand{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.5rem;color:var(--cyan);letter-spacing:0.1em;}
+.tagline-sm{font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--silver2);letter-spacing:0.12em;text-transform:uppercase;}
+.hc{flex:1;text-align:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--white);}
+.header-nav{display:flex;padding:0 40px;}
+.nav-link{padding:10px 18px;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.86rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--silver2);text-decoration:none;border-right:1px solid rgba(0,212,255,0.07);position:relative;transition:color .2s,background .2s;}
+.nav-link::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--cyan);transition:width .3s;}
+.nav-link:hover{color:var(--cyan);background:rgba(0,212,255,0.04);}
+.nav-link:hover::after{width:100%;}
+.nav-link.amber{color:var(--amber);}.nav-link.amber::after{background:var(--amber);}.nav-link.amber:hover{color:var(--amber);}
+.nav-link.cta{margin-left:auto;color:var(--navy);background:var(--cyan);font-weight:700;border-right:none;}
+.nav-link.cta:hover{background:#33e0ff;}
+.nav-link.cta::after{display:none;}
+
+main{flex:1;position:relative;z-index:2;display:flex;align-items:flex-start;justify-content:center;padding:40px 40px 60px;}
+
+.register-layout{display:grid;grid-template-columns:1fr 340px;gap:32px;width:100%;max-width:860px;align-items:start;}
+
+/* FORM SIDE */
+.register-box{background:rgba(9,21,37,0.9);border:1px solid var(--border);padding:28px;position:relative;}
+.register-box::before{content:'';position:absolute;top:-1px;left:16px;width:60px;height:2px;background:var(--cyan);}
+.reg-eyebrow{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--cyan);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:6px;}
+.reg-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.9rem;color:var(--white);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px;}
+.reg-sub{font-size:0.85rem;color:var(--silver2);margin-bottom:24px;}
+
+/* ROLE SELECTOR */
+.role-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;}
+.role-option{position:relative;}
+.role-option input[type=radio]{position:absolute;opacity:0;width:0;height:0;}
+.role-label{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 12px;border:1px solid rgba(0,212,255,0.18);background:transparent;font-family:'Rajdhani',sans-serif;cursor:none;transition:all .2s;text-align:center;}
+.role-label .role-icon{font-size:1.8rem;}
+.role-label .role-name{font-weight:700;font-size:0.95rem;color:var(--silver);letter-spacing:0.06em;text-transform:uppercase;}
+.role-label .role-email{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--silver2);letter-spacing:0.06em;}
+.role-option input:checked + .role-label{border-color:var(--cyan);background:rgba(0,212,255,0.06);}
+.role-option input:checked + .role-label .role-name{color:var(--cyan);}
+.role-option.instructor input:checked + .role-label{border-color:var(--amber);background:rgba(240,165,0,0.06);}
+.role-option.instructor input:checked + .role-label .role-name{color:var(--amber);}
+
+/* FORM FIELDS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--silver2);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;}
+.form-group input,.form-group select{width:100%;background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.2);padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:0.83rem;color:var(--white);outline:none;transition:border-color .2s;appearance:none;}
+.form-group input:focus,.form-group select:focus{border-color:var(--cyan);}
+.form-group input::placeholder{color:var(--silver2);}
+.form-group select option{background:var(--navy);color:var(--white);}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:42px;}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--silver2);font-size:1rem;transition:color .2s;}
+.pw-toggle:hover{color:var(--cyan);}
+.pw-strength{height:3px;background:rgba(0,212,255,0.1);margin-top:5px;border-radius:2px;overflow:hidden;}
+.pw-strength-bar{height:100%;border-radius:2px;transition:width .3s,background .3s;width:0%;}
+
+.divider{border:none;border-top:1px solid rgba(0,212,255,0.1);margin:18px 0;}
+
+.btn-register{display:block;width:100%;padding:14px;background:var(--cyan);border:none;color:var(--navy);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;letter-spacing:0.16em;text-transform:uppercase;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));transition:background .2s;}
+.btn-register:hover{background:#33e0ff;}
+
+.login-link{text-align:center;margin-top:14px;font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);letter-spacing:0.07em;}
+.login-link a{color:var(--cyan);text-decoration:none;}
+.login-link a:hover{text-decoration:underline;}
+
+/* MESSAGE BOX */
+.auth-msg{padding:12px 16px;margin-bottom:16px;font-size:0.85rem;line-height:1.6;display:none;border:1px solid;}
+.auth-msg--error{border-color:rgba(255,68,68,0.4);background:rgba(255,68,68,0.06);color:#ff8888;}
+.auth-msg--success{border-color:rgba(57,255,133,0.4);background:rgba(57,255,133,0.06);color:var(--green-hud);}
+
+/* INFO SIDE */
+.info-panel{}
+.info-block{background:rgba(9,21,37,0.7);border:1px solid var(--border);padding:20px;margin-bottom:16px;position:relative;}
+.info-block::before{content:'';position:absolute;top:-1px;left:12px;width:36px;height:2px;}
+.info-block.cyan::before{background:var(--cyan);}
+.info-block.amber::before{background:var(--amber);}
+.ib-title{font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:10px;}
+.info-block.cyan .ib-title{color:var(--cyan);}
+.info-block.amber .ib-title{color:var(--amber);}
+.ib-email{font-family:'Share Tech Mono',monospace;font-size:0.78rem;padding:10px 12px;border:1px solid rgba(0,212,255,0.15);background:rgba(0,212,255,0.04);color:var(--cyan);letter-spacing:0.07em;margin-bottom:10px;word-break:break-all;}
+.info-block.amber .ib-email{border-color:rgba(240,165,0,0.2);background:rgba(240,165,0,0.04);color:var(--amber);}
+.ib-desc{font-size:0.8rem;color:var(--silver2);line-height:1.6;}
+
+/* EMAIL PREVIEW */
+.email-preview-block{background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.2);padding:14px 16px;margin-bottom:20px;position:relative;}
+.email-preview-block::before{content:'';position:absolute;top:-1px;left:10px;width:30px;height:2px;background:var(--cyan);}
+.ep-label{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--silver2);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;}
+.ep-value{font-family:'Share Tech Mono',monospace;font-size:0.85rem;color:var(--cyan);letter-spacing:0.06em;word-break:break-all;transition:opacity .3s;}
+
+footer{position:relative;z-index:2;background:rgba(5,14,26,0.98);border-top:1px solid var(--border);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.foot-brand{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);}
+.foot-brand span{color:var(--cyan);}
+.foot-nav{display:flex;gap:16px;}
+.foot-nav a{font-family:'Rajdhani',sans-serif;font-size:0.78rem;color:var(--silver2);text-decoration:none;letter-spacing:0.07em;text-transform:uppercase;}
+.foot-nav a:hover{color:var(--cyan);}
+</style>
+</head>
+<body>
+<div class="cursor"><div class="c-dot"></div></div>
+<div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+<div class="hud-corner bl"></div><div class="hud-corner br"></div>
+
+<header>
+  <div class="header-top">
+    <a class="logo-link" href="avv-index.html">
+      <div class="logo-badge">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="14" stroke="#00d4ff" stroke-width="1"/>
+          <path d="M6 18h24M18 6v24" stroke="#00d4ff" stroke-width="0.8" opacity="0.4"/>
+          <path d="M10 12 L18 8 L26 12 L26 24 L18 28 L10 24 Z" stroke="#00d4ff" stroke-width="1.2" fill="none"/>
+          <text x="12" y="21" font-family="Rajdhani" font-size="7" font-weight="700" fill="#00d4ff">242</text>
+        </svg>
+      </div>
+      <div><div class="brand">AEROSIM 242</div><div class="tagline-sm">Académie de Vol Virtuel · Brazzaville</div></div>
+    </a>
+    <div class="hc">Création de compte — Nouveau Pilote</div>
+  </div>
+  <div class="header-nav">
+    <a class="nav-link" href="avv-index.html">Accueil</a>
+    <a class="nav-link" href="avv-formations.html">Formations</a>
+    <a class="nav-link amber" href="avv-examen.html">Examens QCM</a>
+    <a class="nav-link" href="avv-connexion.html">Se connecter</a>
+    <a class="nav-link" href="pont.html">⇄ Aérogligli</a>
+    <a class="nav-link cta" href="avv-connexion.html">Déjà un compte →</a>
+  </div>
+</header>
+
+<main>
+  <div class="register-layout">
+
+    <!-- FORMULAIRE -->
+    <div>
+      <div class="register-box">
+        <div class="reg-eyebrow">// ENREGISTREMENT · SYS.242</div>
+        <div class="reg-title">Créer un compte</div>
+        <div class="reg-sub">Votre identifiant email sera généré automatiquement selon votre nom et rôle.</div>
+
+        <!-- EMAIL PREVIEW -->
+        <div class="email-preview-block">
+          <div class="ep-label">Votre identifiant de connexion sera :</div>
+          <div class="ep-value" id="emailPreview">p.nom@studente.avv242.cg</div>
+        </div>
+
+        <div class="auth-msg" id="registerError"></div>
+
+        <form id="registerForm" novalidate>
+
+          <!-- RÔLE -->
+          <div class="form-group">
+            <label>Choisissez votre rôle</label>
+            <div class="role-selector">
+              <div class="role-option">
+                <input type="radio" name="regRole" id="roleStudent" value="etudiant" checked>
+                <label class="role-label" for="roleStudent">
+                  <span class="role-icon">🎓</span>
+                  <span class="role-name">Étudiant</span>
+                  <span class="role-email">@studente.avv242.cg</span>
+                </label>
+              </div>
+              <div class="role-option instructor">
+                <input type="radio" name="regRole" id="roleInstructor" value="instructeur">
+                <label class="role-label" for="roleInstructor">
+                  <span class="role-icon">👨‍✈️</span>
+                  <span class="role-name">Instructeur</span>
+                  <span class="role-email">@instructeur.avv242.cg</span>
+                </label>
+              </div>
+            </div>
+            <!-- champ caché lié aux radio -->
+            <input type="hidden" id="regRole" value="etudiant">
+          </div>
+
+          <!-- NOM / PRÉNOM -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prénom *</label>
+              <input type="text" id="regFirstName" placeholder="Jean" required autocomplete="given-name">
+            </div>
+            <div class="form-group">
+              <label>Nom de famille *</label>
+              <input type="text" id="regLastName" placeholder="Mbemba" required autocomplete="family-name">
+            </div>
+          </div>
+
+          <!-- TÉLÉPHONE -->
+          <div class="form-group">
+            <label>Téléphone (optionnel)</label>
+            <input type="tel" id="regPhone" placeholder="+242 06 000 0000">
+          </div>
+
+          <!-- MOT DE PASSE -->
+          <div class="form-group">
+            <label>Mot de passe * (min. 6 caractères)</label>
+            <div class="pw-wrap">
+              <input type="password" id="regPassword" placeholder="••••••••" required autocomplete="new-password">
+              <button type="button" class="pw-toggle" id="toggleReg1">👁</button>
+            </div>
+            <div class="pw-strength"><div class="pw-strength-bar" id="strengthBar"></div></div>
+          </div>
+
+          <div class="form-group">
+            <label>Confirmer le mot de passe *</label>
+            <div class="pw-wrap">
+              <input type="password" id="regPassword2" placeholder="••••••••" required autocomplete="new-password">
+              <button type="button" class="pw-toggle" id="toggleReg2">👁</button>
+            </div>
+          </div>
+
+          <hr class="divider">
+          <button type="submit" class="btn-register" id="btnRegister">CRÉER MON COMPTE</button>
+        </form>
+
+        <div class="login-link">
+          Déjà inscrit ? <a href="avv-connexion.html">Se connecter →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANNEAU INFO -->
+    <div class="info-panel">
+      <div class="info-block cyan">
+        <div class="ib-title">// Format Étudiant</div>
+        <div class="ib-email">p.nom@studente.avv242.cg</div>
+        <div class="ib-desc">
+          La première lettre de votre prénom, suivie de votre nom de famille, puis <strong>@studente.avv242.cg</strong>.<br><br>
+          Exemple : <em>Jean Mbemba</em> → <strong>j.mbemba@studente.avv242.cg</strong>
+        </div>
+      </div>
+      <div class="info-block amber">
+        <div class="ib-title">// Format Instructeur</div>
+        <div class="ib-email">p.nom@instructeur.avv242.cg</div>
+        <div class="ib-desc">
+          Même format que l'étudiant, mais avec le domaine <strong>@instructeur.avv242.cg</strong>.<br><br>
+          Exemple : <em>Paul Ngoma</em> → <strong>p.ngoma@instructeur.avv242.cg</strong>
+        </div>
+      </div>
+      <div class="info-block cyan">
+        <div class="ib-title">// Important</div>
+        <div class="ib-desc">
+          ⚠️ Notez soigneusement votre identifiant généré — il vous sera affiché à la fin de l'inscription et servira à vous connecter à chaque session.<br><br>
+          Le mot de passe est de votre choix et doit contenir au minimum 6 caractères.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="foot-brand"><span>AEROSIM 242</span> · Brazzaville · FCBB</div>
+  <div class="foot-nav">
+    <a href="avv-index.html">Accueil</a>
+    <a href="avv-connexion.html">Connexion</a>
+    <a href="pont.html">Aérogligli</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+
+<script src="auth.js"></script>
+<script>
+// Curseur
+const c = document.querySelector('.cursor');
+document.addEventListener('mousemove', e => {
+  c.style.left = e.clientX + 'px';
+  c.style.top  = e.clientY + 'px';
+});
+
+// Sync radio → champ caché + preview
+document.querySelectorAll('input[name="regRole"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    document.getElementById('regRole').value = radio.value;
+  });
+});
+
+// Toggle passwords
+document.getElementById('toggleReg1').addEventListener('click', () => {
+  const i = document.getElementById('regPassword');
+  i.type = i.type === 'password' ? 'text' : 'password';
+});
+document.getElementById('toggleReg2').addEventListener('click', () => {
+  const i = document.getElementById('regPassword2');
+  i.type = i.type === 'password' ? 'text' : 'password';
+});
+
+// Indicateur de force du mot de passe
+document.getElementById('regPassword').addEventListener('input', function() {
+  const v = this.value;
+  const bar = document.getElementById('strengthBar');
+  let score = 0;
+  if (v.length >= 6)  score++;
+  if (v.length >= 10) score++;
+  if (/[A-Z]/.test(v)) score++;
+  if (/[0-9]/.test(v)) score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  const colors = ['#ff4444','#ff8800','#f0a500','#88dd44','#39ff85'];
+  const widths  = ['20%','40%','60%','80%','100%'];
+  bar.style.width = v.length ? widths[Math.min(score-1,4)] : '0%';
+  bar.style.background = v.length ? colors[Math.min(score-1,4)] : 'transparent';
+});
+</script>
+</body>
+</html>
