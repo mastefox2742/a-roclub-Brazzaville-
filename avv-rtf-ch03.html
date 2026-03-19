@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroSim 242 – RTF Ch.03 · Transmission des Nombres</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>/* ============================================================
+   AEROSIM 242 — Styles RTF partagés
+   rtf-shared.css · v1.0.0
+   ============================================================ */
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#050e1a;--navy2:#091525;--navy3:#0d1f33;
+  --cyan:#00d4ff;--amber:#f0a500;
+  --silver:#a8bcc8;--silver2:#5a7484;--silver3:#3a5464;
+  --green:#39ff85;--red:#ff4444;--white:#e8f4ff;
+  --border:rgba(0,212,255,0.15);--border2:rgba(0,212,255,0.08);
+}
+*{cursor:none!important;}
+.cursor{position:fixed;width:24px;height:24px;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);}
+.cursor::before,.cursor::after{content:'';position:absolute;background:var(--cyan);}
+.cursor::before{width:1px;height:100%;left:50%;top:0;transform:translateX(-50%);}
+.cursor::after{width:100%;height:1px;top:50%;left:0;transform:translateY(-50%);}
+.cursor .cd{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--cyan);top:50%;left:50%;transform:translate(-50%,-50%);}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--silver);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+
+/* HUD CORNERS */
+.hc-fix{position:fixed;width:44px;height:44px;pointer-events:none;z-index:8;}
+.hc-fix::before,.hc-fix::after{content:'';position:absolute;background:rgba(0,212,255,0.35);}
+.hc-fix.tl{top:8px;left:8px;}.hc-fix.tl::before{width:14px;height:1px;top:0;left:0;}.hc-fix.tl::after{width:1px;height:14px;top:0;left:0;}
+.hc-fix.tr{top:8px;right:8px;}.hc-fix.tr::before{width:14px;height:1px;top:0;right:0;}.hc-fix.tr::after{width:1px;height:14px;top:0;right:0;}
+.hc-fix.bl{bottom:8px;left:8px;}.hc-fix.bl::before{width:14px;height:1px;bottom:0;left:0;}.hc-fix.bl::after{width:1px;height:14px;bottom:0;left:0;}
+.hc-fix.br{bottom:8px;right:8px;}.hc-fix.br::before{width:14px;height:1px;bottom:0;right:0;}.hc-fix.br::after{width:1px;height:14px;bottom:0;right:0;}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:20;background:rgba(5,14,26,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(8px);}
+.hdr-top{display:flex;align-items:center;padding:10px 32px;gap:16px;border-bottom:1px solid var(--border2);flex-wrap:wrap;}
+.logo-link{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
+.logo-badge{width:40px;height:40px;border:1px solid rgba(0,212,255,0.4);border-radius:3px;display:flex;align-items:center;justify-content:center;background:rgba(0,212,255,0.05);}
+.logo-badge svg{width:27px;height:27px;}
+.brand{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.2rem;color:var(--cyan);letter-spacing:0.1em;}
+.tagline-xs{font-family:'Share Tech Mono',monospace;font-size:0.5rem;color:var(--silver2);letter-spacing:0.1em;text-transform:uppercase;}
+.mod-badge{padding:3px 10px;border:1px solid rgba(0,212,255,0.3);background:rgba(0,212,255,0.06);font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--cyan);letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;}
+.hdr-title{flex:1;text-align:center;}
+.hdr-title h1{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;color:var(--white);letter-spacing:0.08em;text-transform:uppercase;}
+.hdr-title p{font-family:'Share Tech Mono',monospace;font-size:0.53rem;color:var(--silver2);letter-spacing:0.08em;margin-top:2px;}
+.hdr-nav-row{display:flex;align-items:center;padding:0 32px;overflow-x:auto;}
+.hn{padding:8px 14px;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--silver2);text-decoration:none;border-right:1px solid var(--border2);white-space:nowrap;position:relative;transition:color .2s,background .2s;}
+.hn::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--cyan);transition:width .3s;}
+.hn:hover,.hn.active{color:var(--cyan);background:rgba(0,212,255,0.04);}
+.hn:hover::after,.hn.active::after{width:100%;}
+.hn.amber{color:var(--amber);}.hn.amber::after{background:var(--amber);}.hn.amber:hover{color:var(--amber);}
+.hn.cta{margin-left:auto;color:var(--navy);background:var(--cyan);font-weight:700;border-right:none;}
+.hn.cta:hover{background:#33e0ff;}.hn.cta::after{display:none;}
+
+/* LAYOUT */
+.page-layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 86px);position:relative;z-index:2;}
+
+/* SIDEBAR */
+.sidebar{background:rgba(5,14,26,0.6);border-right:1px solid var(--border2);padding:16px 0;position:sticky;top:86px;height:calc(100vh - 86px);overflow-y:auto;}
+.sb-label{padding:8px 14px;font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--silver3);letter-spacing:0.14em;text-transform:uppercase;}
+.sb-link{display:flex;align-items:center;gap:8px;padding:7px 14px;font-family:'Rajdhani',sans-serif;font-size:0.82rem;color:var(--silver2);text-decoration:none;transition:all .2s;border-left:2px solid transparent;letter-spacing:0.02em;}
+.sb-link:hover{color:var(--cyan);background:rgba(0,212,255,0.04);border-left-color:rgba(0,212,255,0.3);}
+.sb-link.active{color:var(--cyan);background:rgba(0,212,255,0.06);border-left-color:var(--cyan);}
+.sb-link.done{color:var(--green);}
+.sb-link.done::after{content:'✓';margin-left:auto;font-size:0.65rem;}
+.sb-num{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--silver3);width:20px;flex-shrink:0;}
+.sb-divider{height:1px;background:var(--border2);margin:8px 14px;}
+
+/* MAIN CONTENT */
+.content{padding:28px 44px;max-width:820px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.content > *{animation:fadeUp .4s ease both;}
+
+/* SECTION HEADERS */
+.section-id{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--cyan);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:5px;}
+.section-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.5rem;color:var(--white);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:3px;padding-bottom:10px;border-bottom:1px solid var(--border2);}
+.section-subtitle{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--amber);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;}
+.body-text{font-size:0.93rem;color:var(--silver);line-height:1.8;margin-bottom:14px;}
+.body-text strong{color:var(--white);font-weight:600;}
+
+/* BOXES */
+.concept-box{background:rgba(0,212,255,0.04);border:1px solid var(--border);border-left:3px solid var(--cyan);padding:13px 16px;margin:14px 0;position:relative;}
+.concept-box::before{content:'';position:absolute;top:-1px;left:16px;width:26px;height:2px;background:var(--cyan);}
+.box-label{font-family:'Share Tech Mono',monospace;font-size:0.56rem;color:var(--cyan);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:5px;}
+.concept-box p,.warn-box p{font-size:0.86rem;color:var(--silver);line-height:1.7;margin:0;}
+.concept-box strong,.warn-box strong{color:var(--cyan);}
+.warn-box{background:rgba(240,165,0,0.05);border:1px solid rgba(240,165,0,0.25);border-left:3px solid var(--amber);padding:13px 16px;margin:14px 0;}
+.warn-box .box-label{color:var(--amber);}
+.warn-box strong{color:var(--amber);}
+
+/* TABLES */
+.data-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:0.86rem;}
+.data-table th{background:rgba(0,212,255,0.08);padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--cyan);letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid var(--border);text-align:left;}
+.data-table td{padding:8px 12px;border-bottom:1px solid var(--border2);vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:rgba(0,212,255,0.02);}
+.data-table td.mono{font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:var(--white);}
+.data-table td.cyan{font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:var(--cyan);}
+.data-table td.amber{font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:var(--amber);}
+
+/* TECH LIST */
+.tech-list{display:flex;flex-direction:column;gap:5px;margin:14px 0;}
+.tech-item{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;background:rgba(9,21,37,0.6);border:1px solid var(--border2);}
+.tech-num{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--cyan);width:20px;flex-shrink:0;margin-top:2px;}
+.tech-text{font-size:0.86rem;color:var(--silver);line-height:1.5;}
+.tech-text strong{color:var(--white);}
+
+/* RADIO EXCHANGE */
+.radio-exchange{margin:14px 0;border:1px solid var(--border);background:rgba(5,14,26,0.5);}
+.rx-header{padding:7px 14px;background:rgba(0,212,255,0.06);border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--cyan);letter-spacing:0.12em;text-transform:uppercase;}
+.rx-line{display:grid;grid-template-columns:70px 1fr;}
+.rx-who{padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:0.08em;text-transform:uppercase;border-right:1px solid var(--border2);display:flex;align-items:flex-start;padding-top:10px;}
+.rx-who.atc{color:var(--cyan);}
+.rx-who.pilot{color:var(--amber);}
+.rx-text{padding:8px 14px;font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:var(--silver);line-height:1.5;border-bottom:1px solid var(--border2);}
+.rx-line:last-child .rx-text{border-bottom:none;}
+.rx-text .kw{color:var(--white);}
+.rx-text .val{color:var(--cyan);}
+.rx-text .amb{color:var(--amber);}
+
+/* ALPHA GRID */
+.alpha-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:14px 0;}
+.alpha-card{background:rgba(9,21,37,0.8);border:1px solid var(--border2);padding:9px 11px;transition:border-color .2s,background .2s;}
+.alpha-card:hover{border-color:rgba(0,212,255,0.3);background:rgba(0,212,255,0.04);}
+.alpha-letter{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.3rem;color:var(--cyan);line-height:1;}
+.alpha-word{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--white);margin-top:2px;}
+.alpha-pron{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--silver2);margin-top:1px;}
+
+/* PRIORITY LIST */
+.priority-list{display:flex;flex-direction:column;gap:7px;margin:14px 0;}
+.prio-item{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;background:rgba(9,21,37,0.7);border:1px solid var(--border2);border-left:3px solid;}
+.prio-1{border-left-color:#ff4444;}.prio-2{border-left-color:#ff8844;}.prio-3{border-left-color:#f0a500;}
+.prio-4{border-left-color:#88dd44;}.prio-5{border-left-color:#39ff85;}.prio-6{border-left-color:#00d4ff;}.prio-7{border-left-color:#5a7484;}
+.prio-num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.3rem;color:var(--silver2);width:22px;flex-shrink:0;}
+.prio-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.9rem;color:var(--white);text-transform:uppercase;letter-spacing:0.04em;}
+.prio-signal{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--cyan);margin-top:2px;}
+.prio-desc{font-size:0.8rem;color:var(--silver2);margin-top:3px;line-height:1.5;}
+
+/* Q CODES */
+.qcode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:14px 0;}
+.qcode-card{background:rgba(9,21,37,0.8);border:1px solid var(--border2);padding:11px 14px;display:flex;gap:12px;}
+.qcode-code{font-family:'Share Tech Mono',monospace;font-size:0.88rem;color:var(--amber);font-weight:700;width:36px;flex-shrink:0;}
+.qcode-def{font-size:0.82rem;color:var(--silver);line-height:1.5;}
+
+/* READABILITY SCALE */
+.readability-scale{display:flex;flex-direction:column;gap:6px;margin:14px 0;}
+.rs-item{display:flex;align-items:center;gap:12px;}
+.rs-num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.2rem;color:var(--cyan);width:18px;text-align:center;flex-shrink:0;}
+.rs-bar-wrap{flex:1;height:5px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.rs-bar{height:100%;border-radius:2px;}
+.rs-1{background:#ff4444;width:20%;}.rs-2{background:#ff8844;width:40%;}.rs-3{background:#f0a500;width:60%;}
+.rs-4{background:#88dd44;width:80%;}.rs-5{background:#39ff85;width:100%;}
+.rs-label{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver);width:200px;}
+
+/* NAVIGATION BAS DE PAGE */
+.lesson-nav{display:flex;justify-content:space-between;align-items:center;margin-top:40px;padding-top:20px;border-top:1px solid var(--border2);}
+.ln-btn{display:flex;align-items:center;gap:8px;padding:10px 18px;background:rgba(0,212,255,0.04);border:1px solid var(--border);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--silver);text-decoration:none;transition:all .2s;}
+.ln-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.08);}
+.ln-btn.primary{background:var(--cyan);color:var(--navy);border-color:var(--cyan);}
+.ln-btn.primary:hover{background:#33e0ff;}
+.ln-info{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--silver2);letter-spacing:0.08em;text-align:center;}
+
+/* ─── QUIZ STYLES ─── */
+.quiz-section{margin-top:40px;border-top:2px solid rgba(240,165,0,0.3);padding-top:24px;}
+.quiz-section-title{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--amber);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:14px;}
+#quizContainer{}
+.quiz-wrap{background:rgba(9,21,37,0.8);border:1px solid rgba(240,165,0,0.2);padding:22px;position:relative;}
+.quiz-wrap::before{content:'';position:absolute;top:-1px;left:16px;width:40px;height:2px;background:var(--amber);}
+.quiz-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+.qz-tag{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--amber);letter-spacing:0.12em;text-transform:uppercase;}
+.qz-count{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--silver2);}
+.qz-score{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--cyan);}
+.quiz-progress-bar{height:3px;background:rgba(240,165,0,0.15);border-radius:2px;overflow:hidden;margin-bottom:18px;}
+.qpb-fill{height:100%;background:var(--amber);border-radius:2px;transition:width .4s ease;}
+.quiz-question{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:1.05rem;color:var(--white);line-height:1.5;margin-bottom:16px;letter-spacing:0.02em;}
+.quiz-choices{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+.quiz-choice{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1px solid rgba(0,212,255,0.12);background:transparent;transition:all .2s;position:relative;overflow:hidden;}
+.quiz-choice::before{content:'';position:absolute;left:0;top:0;width:2px;height:100%;background:var(--cyan);transform:scaleY(0);transform-origin:top;transition:transform .2s;}
+.quiz-choice:hover{border-color:rgba(0,212,255,0.3);background:rgba(0,212,255,0.04);}
+.quiz-choice:hover::before{transform:scaleY(1);}
+.quiz-choice.correct{border-color:var(--green);background:rgba(57,255,133,0.06);}
+.quiz-choice.correct::before{background:var(--green);transform:scaleY(1);}
+.quiz-choice.wrong{border-color:var(--red);background:rgba(255,68,68,0.06);}
+.quiz-choice.wrong::before{background:var(--red);transform:scaleY(1);}
+.qc-letter{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--silver2);width:16px;flex-shrink:0;margin-top:1px;}
+.qc-text{font-size:0.88rem;color:var(--silver);line-height:1.4;flex:1;}
+.qc-icon{margin-left:auto;font-size:1rem;flex-shrink:0;}
+.quiz-explain{padding:11px 14px;margin:10px 0;font-size:0.84rem;line-height:1.6;border:1px solid;border-radius:0;}
+.quiz-explain.correct-explain{border-color:rgba(57,255,133,0.3);background:rgba(57,255,133,0.05);color:#aaffc8;}
+.quiz-explain.wrong-explain{border-color:rgba(255,68,68,0.3);background:rgba(255,68,68,0.05);color:#ffaaaa;}
+.quiz-actions{display:flex;justify-content:flex-end;margin-top:12px;}
+.qz-btn-next{padding:10px 22px;background:var(--amber);color:var(--navy);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.88rem;letter-spacing:0.12em;text-transform:uppercase;border:none;clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px));transition:background .2s;text-decoration:none;display:inline-block;}
+.qz-btn-next:hover{background:#ffbf33;}
+.quiz-result{background:rgba(9,21,37,0.9);border:1px solid var(--border);padding:28px;text-align:center;}
+.quiz-result.result-pass{border-color:rgba(57,255,133,0.3);}
+.quiz-result.result-fail{border-color:rgba(255,68,68,0.3);}
+.qr-icon{font-size:2.5rem;margin-bottom:8px;}
+.result-pass .qr-icon{color:var(--green);}
+.result-fail .qr-icon{color:var(--red);}
+.qr-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.6rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.result-pass .qr-title{color:var(--green);}
+.result-fail .qr-title{color:var(--red);}
+.qr-score{font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--white);margin-bottom:4px;}
+.qr-seuil{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--silver2);letter-spacing:0.08em;margin-bottom:14px;}
+.qr-message{font-size:0.88rem;color:var(--silver2);line-height:1.6;max-width:400px;margin:0 auto 20px;}
+.qr-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.qz-btn-retry{padding:9px 20px;background:rgba(0,212,255,0.06);border:1px solid var(--border);color:var(--cyan);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;transition:all .2s;text-decoration:none;}
+.qz-btn-retry:hover{background:rgba(0,212,255,0.12);border-color:var(--cyan);}
+.qz-btn-sommaire{padding:9px 20px;background:transparent;border:1px solid var(--border);color:var(--silver2);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;transition:all .2s;text-decoration:none;}
+.qz-btn-sommaire:hover{border-color:var(--silver2);color:var(--silver);}
+
+/* FOOTER */
+footer{position:relative;z-index:2;background:rgba(5,14,26,0.98);border-top:1px solid var(--border);padding:10px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.fb{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--silver2);}
+.fb span{color:var(--cyan);}
+.fn{display:flex;gap:14px;}
+.fn a{font-family:'Rajdhani',sans-serif;font-size:0.75rem;color:var(--silver2);text-decoration:none;letter-spacing:0.07em;text-transform:uppercase;}
+.fn a:hover{color:var(--cyan);}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--navy2);}
+::-webkit-scrollbar-thumb{background:var(--silver3);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="cursor"><div class="cd"></div></div>
+<div class="hc-fix tl"></div><div class="hc-fix tr"></div>
+<div class="hc-fix bl"></div><div class="hc-fix br"></div>
+<header>
+  <div class="hdr-top">
+    <a class="logo-link" href="avv-index.html"><div class="logo-badge"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" stroke="#00d4ff" stroke-width="1"/><path d="M6 18h24M18 6v24" stroke="#00d4ff" stroke-width="0.7" opacity="0.4"/><path d="M10 12 L18 8 L26 12 L26 24 L18 28 L10 24 Z" stroke="#00d4ff" stroke-width="1.1" fill="none"/><text x="12" y="21" font-family="Rajdhani" font-size="7" font-weight="700" fill="#00d4ff">242</text></svg></div>
+      <div><div class="brand">AEROSIM 242</div><div class="tagline-xs">Académie de Vol Virtuel · Brazzaville</div></div></a>
+    <div class="mod-badge">// MOD.090 · CH.03/13</div>
+    <div class="hdr-title"><h1>Transmission des Nombres</h1><p>PRONONCIATION OACI — CHIFFRE PAR CHIFFRE</p></div>
+  </div>
+  <div class="hdr-nav-row">
+    <a class="hn" href="avv-index.html">Accueil</a>
+    <a class="hn" href="avv-rtf-sommaire.html">Sommaire RTF</a>
+    <a class="hn" href="avv-formations.html">Formations</a>
+    <a class="hn amber" href="avv-examen.html">QCM</a>
+    <a class="hn" href="pont.html">⇄ Aérogligli</a>
+    <a class="hn cta" href="avv-rtf-sommaire.html">Sommaire →</a>
+  </div>
+</header>
+<div class="page-layout">
+  <nav class="sidebar">
+    <div class="sb-label">// MODULE 090 · RTF</div>
+    <div class="sb-divider"></div>
+      <a class="sb-link " href="avv-rtf-ch01.html"><span class="sb-num">01</span>Technique d'émission RTF</a>
+      <a class="sb-link " href="avv-rtf-ch02.html"><span class="sb-num">02</span>Alphabet Phonétique OACI</a>
+      <a class="sb-link active" href="avv-rtf-ch03.html"><span class="sb-num">03</span>Transmission des Nombres</a>
+      <a class="sb-link " href="avv-rtf-ch04.html"><span class="sb-num">04</span>Transmission du Temps</a>
+      <a class="sb-link " href="avv-rtf-ch05.html"><span class="sb-num">05</span>Indicatifs d'Appel</a>
+      <a class="sb-link " href="avv-rtf-ch06.html"><span class="sb-num">06</span>Catégories & Priorités</a>
+      <a class="sb-link " href="avv-rtf-ch07.html"><span class="sb-num">07</span>Établissement du Contact</a>
+      <a class="sb-link " href="avv-rtf-ch08.html"><span class="sb-num">08</span>Mots et Phrases Standard</a>
+      <a class="sb-link " href="avv-rtf-ch09.html"><span class="sb-num">09</span>Read-Back Obligatoires</a>
+      <a class="sb-link " href="avv-rtf-ch10.html"><span class="sb-num">10</span>Radio Check & Lisibilité</a>
+      <a class="sb-link " href="avv-rtf-ch11.html"><span class="sb-num">11</span>Codes Q</a>
+      <a class="sb-link " href="avv-rtf-ch12.html"><span class="sb-num">12</span>Informations Météorologiques</a>
+      <a class="sb-link " href="avv-rtf-ch13.html"><span class="sb-num">13</span>Échanges RTF Complets</a>
+    <div class="sb-divider"></div>
+    <a class="sb-link" href="avv-rtf-sommaire.html"><span class="sb-num">◎</span>Sommaire</a>
+  </nav>
+  <div class="content">
+
+  <div class="section-id">// MODULE 090 · CHAPITRE 03 / 13</div>
+  <div class="section-title">Transmission des Nombres</div>
+  <div class="section-subtitle">PRONONCIATION CHIFFRE PAR CHIFFRE — EXCEPTIONS — DÉCIMALES</div>
+  <p class="body-text">Tous les nombres — sauf les <strong>centaines et milliers entiers</strong> — sont transmis chiffre par chiffre. Les centaines prennent <strong>HUNDRED</strong>, les milliers <strong>THOUSAND</strong>.</p>
+  <table class="data-table">
+    <thead><tr><th>Chiffre</th><th>Prononciation OACI</th><th>Chiffre</th><th>Prononciation OACI</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">0</td><td class="cyan">ZERO</td><td class="mono">5</td><td class="cyan">FIFE</td></tr>
+      <tr><td class="mono">1</td><td class="cyan">WUN</td><td class="mono">6</td><td class="cyan">SIX</td></tr>
+      <tr><td class="mono">2</td><td class="cyan">TOO</td><td class="mono">7</td><td class="cyan">SEVEN</td></tr>
+      <tr><td class="mono">3</td><td class="cyan">TREE</td><td class="mono">8</td><td class="cyan">AIT</td></tr>
+      <tr><td class="mono">4</td><td class="cyan">FOWER</td><td class="mono">9</td><td class="cyan">NINER</td></tr>
+    </tbody>
+  </table>
+  <table class="data-table">
+    <thead><tr><th>Nombre</th><th>Transmission OACI</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">75</td><td class="cyan">SEV-en FIFE</td></tr>
+      <tr><td class="mono">100</td><td class="cyan">WUN HUN-dred</td></tr>
+      <tr><td class="mono">2500</td><td class="cyan">TOO TOU-SAND FIFE HUN-dred</td></tr>
+      <tr><td class="mono">11000</td><td class="cyan">WUN WUN TOU-SAND</td></tr>
+      <tr><td class="mono">118.5 MHz</td><td class="cyan">ONE ONE EIGHT DECIMAL FIFE</td></tr>
+      <tr><td class="mono">FL350</td><td class="cyan">TREE FIFE ZERO</td></tr>
+      <tr><td class="mono">Cap 300°</td><td class="cyan">TREE ZERO ZERO</td></tr>
+      <tr><td class="mono">0.75 Mach</td><td class="cyan">MACH POINT SEVEN FIFE</td></tr>
+    </tbody>
+  </table>
+  <div class="concept-box"><div class="box-label">// Décimales</div><p>Fréquences → mot <strong>DECIMAL</strong> (ex: 118.5 = ONE ONE EIGHT DECIMAL FIFE). Tout le reste → mot <strong>POINT</strong> (ex: 11.5 NM = ELEVEN POINT FIFE MILES).</p></div>
+  <div class="warn-box"><div class="box-label">// Exceptions</div><p>Cap / route / radiale / FL / vitesse → toujours chiffre par chiffre. Visibilité &gt; 10 km → "TEN kilometres". Squawk 7500 → "SEVEN FIFE ZERO ZERO". Tour complet → "TREE SIXTY".</p></div>
+    <div class="quiz-section">
+      <div class="quiz-section-title">// ÉVALUATION — QUIZ DU CHAPITRE 03</div>
+      <div id="quizContainer"></div>
+    </div>
+    <div class="lesson-nav"><a class="ln-btn" href="avv-rtf-ch02.html">← Ch.02 Alphabet Phonétique OACI</a><div class="ln-info">CHAPITRE 03 / 13<br>MODULE 090 · RTF</div><a class="ln-btn primary" href="avv-rtf-ch04.html">Ch.04 Transmission du Temps →</a></div>
+  </div>
+</div>
+<footer>
+  <div class="fb"><span>AEROSIM 242</span> · MODULE 090 · CH.03 · TRANSMISSION DES NOMBRES</div>
+  <div class="fn"><a href="avv-rtf-sommaire.html">Sommaire</a><a href="avv-formations.html">Formations</a><a href="avv-index.html">Accueil</a></div>
+</footer>
+<script>const CURRENT_CHAPTER='ch03';</script>
+<script>/**
+ * ============================================================
+ *  AEROSIM 242 — Gestionnaire de Quiz RTF
+ *  quiz.js · v1.0.0
+ *  Gère les quiz par chapitre, la progression et la navigation
+ * ============================================================
+ */
+
+'use strict';
+
+// ─────────────────────────────────────────────
+//  BANQUE DE QUESTIONS PAR CHAPITRE
+// ─────────────────────────────────────────────
+const QUIZ_BANK = {
+
+  ch01: {
+    title: "Technique d'émission RTF",
+    seuil: 75,
+    questions: [
+      {
+        q: "Quelle est la première chose à faire avant d'émettre sur une fréquence radio ?",
+        choices: ["Appuyer immédiatement sur le bouton d'émission", "Écouter la fréquence pour s'assurer qu'elle est libre", "Vérifier le volume du microphone", "Demander l'autorisation au contrôleur"],
+        correct: 1,
+        explain: "Avant toute émission, il faut écouter la fréquence pour éviter d'interférer avec une transmission en cours — règle fondamentale ICAO Doc 9432."
+      },
+      {
+        q: "Quel est le débit de parole maximum recommandé en radiotéléphonie ?",
+        choices: ["50 mots par minute", "75 mots par minute", "100 mots par minute", "150 mots par minute"],
+        correct: 2,
+        explain: "Le débit maximum est de 100 mots/minute selon ICAO Doc 9432. On ralentit davantage si le destinataire doit noter le message."
+      },
+      {
+        q: "Que doit faire le pilote avec le bouton d'émission ?",
+        choices: ["Le relâcher dès que possible pour libérer la fréquence", "L'appuyer et le relâcher uniquement une fois le message complet transmis", "L'appuyer uniquement au début du message", "Ne jamais le relâcher pendant toute la communication"],
+        correct: 1,
+        explain: "Le bouton doit être appuyé AVANT de parler et relâché uniquement à la fin du message complet pour garantir que toute la transmission est émise."
+      },
+      {
+        q: "Pourquoi un microphone 'bloqué' est-il dangereux ?",
+        choices: ["Il endommage l'équipement radio", "Il bloque la fréquence et empêche toute autre communication", "Il réduit la qualité du son", "Il décharge la batterie de l'avion"],
+        correct: 1,
+        explain: "Un microphone bloqué (stuck) occupe la fréquence en permanence et empêche toute autre communication — situation potentiellement mortelle."
+      },
+      {
+        q: "Quel son d'hésitation faut-il absolument éviter en radiotéléphonie ?",
+        choices: ["Silence bref entre les phrases", "Le mot STANDBY", "Les sons comme 'euh'", "Le mot ROGER"],
+        correct: 2,
+        explain: "Les sons d'hésitation comme 'euh' doivent être évités — ils perturbent la clarté de la communication et rallongent inutilement les transmissions."
+      }
+    ]
+  },
+
+  ch02: {
+    title: "Alphabet Phonétique OACI",
+    seuil: 75,
+    questions: [
+      {
+        q: "Comment épelle-t-on la lettre 'A' en alphabet phonétique OACI ?",
+        choices: ["AMSTERDAM", "ALPHA", "ARROW", "AERIAL"],
+        correct: 1,
+        explain: "A = ALPHA (prononcé AL-FAH). C'est l'alphabet phonétique OACI standardisé, utilisé dans l'aviation mondiale."
+      },
+      {
+        q: "Quelle est la prononciation correcte de la lettre 'R' (ROMEO) ?",
+        choices: ["ROH-ME-OH", "ROW ME OH", "RO-MAY-O", "RUM-EE-OH"],
+        correct: 1,
+        explain: "ROMEO se prononce ROW ME OH. Les syllabes à accentuer sont définies par l'OACI dans l'Annexe 10, Chapitre 5."
+      },
+      {
+        q: "Comment dit-on la lettre 'W' en phonétique OACI ?",
+        choices: ["WASHINGTON", "WILLIAM", "WHISKEY", "WARSAW"],
+        correct: 2,
+        explain: "W = WHISKEY (prononcé WISS-KEY). Cet alphabet est identique pour tous les pays utilisant l'OACI."
+      },
+      {
+        q: "Pourquoi certaines abréviations comme ILS et QNH ne sont-elles PAS épelées phonétiquement ?",
+        choices: ["Elles sont trop longues à épeler", "Leur usage est devenu universel et elles sont immédiatement comprises", "Elles sont réservées aux contrôleurs", "L'OACI l'interdit"],
+        correct: 1,
+        explain: "ILS, QNH, QFE etc. sont transmises sans épellation phonétique car leur usage est devenu universel — elles sont comprises immédiatement par tous les aviateurs."
+      },
+      {
+        q: "Quelle lettre phonétique correspond au mot NOVEMBER ?",
+        choices: ["M", "N", "O", "P"],
+        correct: 1,
+        explain: "NOVEMBER = N (prononcé NO-VEM-BER). On utilise le mois de novembre comme mot phonétique pour la lettre N."
+      }
+    ]
+  },
+
+  ch03: {
+    title: "Transmission des Nombres",
+    seuil: 75,
+    questions: [
+      {
+        q: "Comment transmet-on le chiffre '9' en radiotéléphonie OACI ?",
+        choices: ["NINE", "NINER", "NEUF", "NUEVA"],
+        correct: 1,
+        explain: "Le 9 se dit NINER (pas NINE) pour éviter toute confusion avec d'autres mots anglais. Cette prononciation est spécifique à l'aviation OACI."
+      },
+      {
+        q: "Comment transmet-on le nombre 2500 ?",
+        choices: ["TWO FIVE ZERO ZERO", "TOO TOU-SAND FIFE HUN-dred", "TWENTY-FIVE HUNDRED", "TWO THOUSAND FIVE"],
+        correct: 1,
+        explain: "2500 = TOO TOU-SAND FIFE HUN-dred. Les milliers et centaines entiers utilisent les mots THOUSAND et HUNDRED selon les règles OACI."
+      },
+      {
+        q: "La fréquence 118.5 MHz se transmet comme :",
+        choices: ["ONE EIGHTEEN POINT FIVE", "ONE ONE EIGHT DECIMAL FIFE", "ONE-EIGHTEEN-FIVE", "CENT DIX-HUIT VIRGULE CINQ"],
+        correct: 1,
+        explain: "Pour les fréquences, on utilise DECIMAL (et non POINT) entre les parties entière et décimale : ONE ONE EIGHT DECIMAL FIFE."
+      },
+      {
+        q: "Le cap 300° se transmet comme :",
+        choices: ["THREE HUNDRED", "TREE ZERO ZERO", "300 DEGRÉS", "THREE-OH-OH"],
+        correct: 1,
+        explain: "Les caps, routes, radiales, FL et vitesses sont toujours transmis chiffre par chiffre : 300 = TREE ZERO ZERO."
+      },
+      {
+        q: "Comment transmet-on le chiffre '5' en OACI ?",
+        choices: ["FIVE", "FIVER", "FIFE", "CINQ"],
+        correct: 2,
+        explain: "Le 5 se dit FIFE (pas FIVE) pour éviter toute confusion phonétique. FIFE est la prononciation OACI standard."
+      }
+    ]
+  },
+
+  ch04: {
+    title: "Transmission du Temps",
+    seuil: 75,
+    questions: [
+      {
+        q: "Quel système horaire est utilisé en aviation internationale ?",
+        choices: ["Heure locale du pays de départ", "UTC (Temps Universel Coordonné) — Zulu", "Heure du pays de destination", "Heure du méridien de Greenwich uniquement"],
+        correct: 1,
+        explain: "Toute référence horaire en aviation se fait en UTC (Zulu), anciennement GMT. C'est une norme OACI mondiale permettant d'éviter les confusions de fuseaux horaires."
+      },
+      {
+        q: "En transmission radio, comment indique-t-on normalement l'heure ?",
+        choices: ["En heures et minutes (4 chiffres toujours)", "En minutes seulement (2 chiffres)", "En secondes", "En heure locale avec le fuseau"],
+        correct: 1,
+        explain: "Normalement, seules les MINUTES sont transmises (2 chiffres). Les 4 chiffres complets sont utilisés uniquement en cas de risque de confusion ou si on franchit l'heure."
+      },
+      {
+        q: "Comment transmet-on l'heure 09h20 ?",
+        choices: ["NINE TWENTY", "ZERO NINER TWO ZERO ou TWO ZERO", "NEUF HEURES VINGT", "9-20"],
+        correct: 1,
+        explain: "09h20 → TWO ZERO (normalement) ou ZERO NINER TWO ZERO (si besoin de précision). Chaque chiffre est prononcé séparément."
+      },
+      {
+        q: "Qu'est-ce que l'EAT et comment doit-il être transmis ?",
+        choices: ["Expected Approach Time — en 2 chiffres", "Estimated Arrival Time — en heure locale", "Expected Approach Time — en 4 chiffres complets, toujours lu-back", "Engine Air Temperature — en degrés"],
+        correct: 2,
+        explain: "EAT = Expected Approach Time. Il est TOUJOURS transmis en 4 chiffres et doit TOUJOURS être lu-back par le pilote — obligation OACI."
+      },
+      {
+        q: "Que désigne le terme 'Zulu' en aviation ?",
+        choices: ["L'alphabet phonétique de la lettre Z", "L'UTC — Temps Universel Coordonné", "Un code météo pour vents forts", "Une procédure d'urgence"],
+        correct: 1,
+        explain: "Zulu (Z) désigne le fuseau horaire UTC. Exemple : 14h30 UTC s'écrit 1430Z. C'est la référence temporelle universelle de l'aviation."
+      }
+    ]
+  },
+
+  ch05: {
+    title: "Indicatifs d'Appel",
+    seuil: 75,
+    questions: [
+      {
+        q: "Quel est le suffixe d'indicatif d'une tour de contrôle (Aerodrome Control) ?",
+        choices: ["RADAR", "CONTROL", "TOWER", "GROUND"],
+        correct: 2,
+        explain: "La tour de contrôle utilise le suffixe TOWER (ex : BRAZZAVILLE TOWER). GROUND = contrôle sol, CONTROL = contrôle régional."
+      },
+      {
+        q: "Un aéronef de catégorie 'HEAVY' doit ajouter ce mot :",
+        choices: ["En fin de message uniquement", "Après son indicatif au premier contact ATS", "Uniquement sur demande du contrôleur", "À chaque transmission"],
+        correct: 1,
+        explain: "L'aéronef HEAVY doit inclure le mot HEAVY immédiatement après son indicatif lors du PREMIER contact avec une unité ATS — règle OACI pour la séparation de sillage."
+      },
+      {
+        q: "Quand un aéronef peut-il utiliser son indicatif abrégé ?",
+        choices: ["Dès le premier appel pour gagner du temps", "Uniquement après que la station aéronautique l'a elle-même utilisé", "Après 5 minutes de communication", "En cas d'urgence uniquement"],
+        correct: 1,
+        explain: "L'indicatif abrégé ne peut être utilisé qu'APRÈS que la station aéronautique l'a elle-même utilisé dans son message — règle stricte OACI."
+      },
+      {
+        q: "Quel est le type d'indicatif de 'SCANDINAVIAN 937' ?",
+        choices: ["Type A — immatriculation", "Type B — désignateur + immatriculation", "Type C — désignateur + numéro de vol", "Type D — code OACI"],
+        correct: 2,
+        explain: "SCANDINAVIAN 937 est un indicatif de TYPE C : désignateur téléphonique de la compagnie (SCANDINAVIAN) + identification de vol (937). Il n'a pas de forme abrégée."
+      },
+      {
+        q: "Lors de l'appel initial, quels indicatifs doivent être utilisés ?",
+        choices: ["Indicatifs abrégés pour aller plus vite", "Indicatifs complets des deux stations", "Uniquement l'indicatif de l'aéronef", "Uniquement l'indicatif de la station au sol"],
+        correct: 1,
+        explain: "Lors de l'appel INITIAL, les indicatifs COMPLETS des deux stations doivent toujours être utilisés — règle fondamentale OACI."
+      }
+    ]
+  },
+
+  ch06: {
+    title: "Catégories de Messages & Priorités",
+    seuil: 75,
+    questions: [
+      {
+        q: "Quel signal radio indique une situation de DÉTRESSE (danger immédiat) ?",
+        choices: ["PAN PAN", "MAYDAY", "EMERGENCY", "URGENCY"],
+        correct: 1,
+        explain: "MAYDAY (répété 3 fois) est le signal de détresse radioélectrique — danger grave et imminent nécessitant une assistance immédiate. C'est la priorité absolue N°1."
+      },
+      {
+        q: "Quelle est la différence entre MAYDAY et PAN PAN ?",
+        choices: ["Ce sont des synonymes", "MAYDAY = détresse (danger immédiat) / PAN PAN = urgence (sécurité sans danger immédiat)", "PAN PAN est plus grave que MAYDAY", "MAYDAY est réservé aux vols militaires"],
+        correct: 1,
+        explain: "MAYDAY = détresse, danger grave et imminent, assistance immédiate requise. PAN PAN = urgence, situation qui concerne la sécurité mais sans nécessiter d'assistance immédiate."
+      },
+      {
+        q: "Quelle catégorie de message a la 3ème priorité selon l'OACI ?",
+        choices: ["Messages météorologiques", "Messages de sécurité des vols", "Messages de radiogoniométrie (DF)", "Messages de régularité des vols"],
+        correct: 2,
+        explain: "3ème priorité = Radiogoniométrie (DF) — messages de localisation par codes Q et vecteurs radar. Priorités : 1-Détresse, 2-Urgence, 3-DF, 4-Sécurité vols, 5-Météo, 6-Régularité."
+      },
+      {
+        q: "PAN PAN MEDICAL est utilisé pour :",
+        choices: ["Un passager blessé qui nécessite une assistance médicale à bord", "Signaler un problème médical à l'aéroport", "Demander un médecin à la radio", "Tout message médical"],
+        correct: 0,
+        explain: "PAN PAN MEDICAL désigne les messages d'urgence précédés du signal de transport médical — catégorie 2, concernant la sécurité sans nécessiter d'assistance immédiate."
+      },
+      {
+        q: "Les METAR, TAF et SIGMET appartiennent à quelle catégorie de messages ?",
+        choices: ["Catégorie 4 — Sécurité des vols", "Catégorie 5 — Messages météorologiques", "Catégorie 6 — Régularité des vols", "Catégorie 2 — Urgence"],
+        correct: 1,
+        explain: "METAR, TAF, SIGMET, VOLMET sont des messages météorologiques — catégorie 5. Les prévisions et alertes météo urgentes pour un aéronef en vol passent en catégorie 4."
+      }
+    ]
+  },
+
+  ch07: {
+    title: "Établissement du Contact Radio",
+    seuil: 75,
+    questions: [
+      {
+        q: "Un appel initial doit contenir :",
+        choices: ["Uniquement le contenu du message", "L'indicatif de la station appelée + l'indicatif de la station appelante + le contenu", "Uniquement l'indicatif de l'aéronef", "Le mot RADIO CHECK puis le message"],
+        correct: 1,
+        explain: "Chaque message doit contenir : (1) UN APPEL (station appelée + station appelante) et (2) UN CONTENU. Les deux indicatifs complets sont obligatoires à l'appel initial."
+      },
+      {
+        q: "Le contact est considéré établi quand :",
+        choices: ["Le pilote a appuyé sur le bouton d'émission", "La station appelée a répondu à l'appel", "Le contrôleur a dit ROGER", "5 secondes se sont écoulées"],
+        correct: 1,
+        explain: "La communication est considérée établie uniquement après que la station appelée a RÉPONDU à l'appel — pas avant."
+      },
+      {
+        q: "Après un appel général 'ALL STATIONS', les aéronefs doivent :",
+        choices: ["Accuser réception un par un dans l'ordre alphabétique", "Ne pas tenter d'accuser réception", "Dire ROGER sur la fréquence", "Contacter la station individuellement"],
+        correct: 1,
+        explain: "Après un appel général (ALL STATIONS), les aéronefs NE doivent PAS accuser réception — c'est une règle explicite OACI. Le message se termine par OUT."
+      },
+      {
+        q: "Après l'appel initial, quel indicatif est utilisé dans les messages suivants ?",
+        choices: ["Les deux indicatifs complets à chaque fois", "Uniquement l'indicatif de l'aéronef", "Uniquement l'indicatif de la station au sol", "Aucun indicatif n'est nécessaire"],
+        correct: 1,
+        explain: "Après l'appel initial, seul l'INDICATIF DE L'AÉRONEF est utilisé. L'indicatif de la station aéronautique est omis car de nombreux aéronefs communiquent avec la même station."
+      },
+      {
+        q: "Que fait le contrôleur si l'indicatif de l'aéronef appelant n'est pas clairement entendu ?",
+        choices: ["Il ignore l'appel", "Il demande à la station de répéter son indicatif", "Il contacte tous les aéronefs en vol", "Il change de fréquence"],
+        correct: 1,
+        explain: "Si l'identification n'est pas certaine, la station appelée demande à répéter l'indicatif : 'STATION CALLING [NOM STATION], SAY AGAIN YOUR CALL SIGN.'"
+      }
+    ]
+  },
+
+  ch08: {
+    title: "Mots et Phrases Standard",
+    seuil: 75,
+    questions: [
+      {
+        q: "Que signifie le mot WILCO en radiotéléphonie ?",
+        choices: ["J'ai reçu votre message", "Je comprends et vais me conformer à votre message", "Attendez s'il vous plaît", "Pouvez-vous répéter ?"],
+        correct: 1,
+        explain: "WILCO = 'Will Comply' — J'ai compris votre message et vais m'y conformer. Différent de ROGER qui confirme seulement la réception sans engagement d'exécution."
+      },
+      {
+        q: "Quelle est la différence entre ROGER et WILCO ?",
+        choices: ["Ce sont des synonymes parfaits", "ROGER = j'ai reçu / WILCO = j'ai reçu ET vais me conformer", "WILCO = j'ai reçu / ROGER = j'ai reçu ET vais me conformer", "ROGER est obsolète"],
+        correct: 1,
+        explain: "ROGER confirme uniquement la réception du message. WILCO confirme la réception ET l'intention de se conformer. On ne dit jamais ROGER WILCO — c'est redondant."
+      },
+      {
+        q: "SAY AGAIN signifie :",
+        choices: ["Je répète pour clarifier", "Répétez tout ou partie de votre dernière transmission", "Je suis d'accord", "Attendez"],
+        correct: 1,
+        explain: "SAY AGAIN = demande de répétition de tout ou partie de la dernière transmission. I SAY AGAIN = je répète moi-même pour clarifier ou accentuer."
+      },
+      {
+        q: "Que signifie STANDBY ?",
+        choices: ["En attente — attendez que je vous rappelle", "Je ne peux pas me conformer", "J'ai bien reçu votre message", "Répétez s'il vous plaît"],
+        correct: 0,
+        explain: "STANDBY = Attendez, je vous rappellerai. Le contrôleur ou le pilote signale qu'il ne peut pas répondre immédiatement mais le fera sous peu."
+      },
+      {
+        q: "Le mot CORRECTION est utilisé pour :",
+        choices: ["Confirmer qu'un message est exact", "Signaler une erreur dans la transmission et donner la version correcte", "Corriger la prononciation d'un mot", "Demander une correction de cap"],
+        correct: 1,
+        explain: "CORRECTION signale qu'une erreur a été commise dans la transmission précédente : 'CORRECTION, the correct version is...' La version correcte suit immédiatement."
+      }
+    ]
+  },
+
+  ch09: {
+    title: "Read-Back Obligatoires",
+    seuil: 80,
+    questions: [
+      {
+        q: "Le pilote reçoit 'DESCEND TO FL 090'. Que doit-il faire ?",
+        choices: ["Dire simplement ROGER et descendre", "Répéter verbatim l'instruction puis son indicatif", "Descendre immédiatement sans répondre", "Demander confirmation avant de répondre"],
+        correct: 1,
+        explain: "Les instructions de niveau DOIVENT être lues-back verbatim : 'DESCEND TO FL 090, [indicatif]'. Le contrôleur accuse réception par CORRECT."
+      },
+      {
+        q: "Comment le contrôleur confirme-t-il qu'un read-back est correct ?",
+        choices: ["En disant ROGER", "En disant CORRECT suivi de l'indicatif de l'aéronef", "En répétant le message une deuxième fois", "En passant à l'instruction suivante"],
+        correct: 1,
+        explain: "Le contrôleur accuse réception d'un read-back correct par l'INDICATIF DE L'AÉRONEF suivi du mot CORRECT. Si le read-back est erroné, il corrige immédiatement."
+      },
+      {
+        q: "Lequel de ces éléments N'est PAS obligatoirement lu-back ?",
+        choices: ["Les instructions de cap", "Le numéro de squawk", "La météo générale non urgente (VOLMET)", "Les clairances de piste"],
+        correct: 2,
+        explain: "Les informations VOLMET générales ne requièrent pas de read-back obligatoire. En revanche : niveaux, caps, vitesses, squawks, clairances de piste, fréquences — tout doit être lu-back."
+      },
+      {
+        q: "Un pilote reçoit 'SQUAWK 7034'. Sa réponse correcte est :",
+        choices: ["ROGER 7034", "SQUAWK 7034, [indicatif]", "CODE 7034, [indicatif]", "SEVEN ZERO THREE FOUR, [indicatif]"],
+        correct: 1,
+        explain: "Les instructions SSR/Squawk doivent être lues-back avec le même mot SQUAWK : 'SQUAWK 7034, [indicatif]'. La clé est de répéter verbatim — les mêmes mots, le même ordre."
+      },
+      {
+        q: "Le SLOT TIME doit-il être lu-back ?",
+        choices: ["Non, c'est une information générale", "Oui, il est toujours lu-back", "Uniquement si le pilote le demande", "Seulement pour les vols IFR long-courrier"],
+        correct: 1,
+        explain: "Le SLOT TIME fait partie des éléments à read-back obligatoire. Comme l'EAT, il doit TOUJOURS être répété verbatim par le pilote — règle OACI."
+      }
+    ]
+  },
+
+  ch10: {
+    title: "Radio Check & Échelle de Lisibilité",
+    seuil: 75,
+    questions: [
+      {
+        q: "Qu'est-ce que la cote de lisibilité '3' signifie ?",
+        choices: ["Parfaitement lisible", "Lisible maintenant et par intermittence", "Lisible mais avec difficulté", "Illisible"],
+        correct: 2,
+        explain: "Échelle de lisibilité : 1=Illisible, 2=Lisible par intermittence, 3=Lisible avec difficulté, 4=Lisible, 5=Parfaitement lisible."
+      },
+      {
+        q: "Un radio check doit contenir dans l'ordre :",
+        choices: ["Station appelante, message, fréquence", "Station appelée, indicatif aéronef, 'RADIO CHECK', fréquence", "Fréquence, indicatif, message", "Indicatif seul suffit"],
+        correct: 1,
+        explain: "Structure : (1) Station appelée (2) Indicatif aéronef (3) Mots 'RADIO CHECK' (4) Fréquence utilisée — ordre strict selon les procédures OACI."
+      },
+      {
+        q: "Un pilote fait un radio check et le contrôleur entend un sifflement fort. Sa réponse est :",
+        choices: ["READING YOU FIVE", "READING YOU THREE, WITH A LOUD BACKGROUND WHISTLE", "UNREADABLE", "SAY AGAIN"],
+        correct: 1,
+        explain: "La réponse doit indiquer la lisibilité (3 ici) ET tout commentaire utile sur la qualité de la transmission (sifflement, parasites, etc.) pour aider le pilote."
+      },
+      {
+        q: "La cote '5' de lisibilité correspond à :",
+        choices: ["Lisible", "Lisible avec difficulté", "Lisible par intermittence", "Parfaitement lisible"],
+        correct: 3,
+        explain: "5 = PERFECTLY READABLE = Parfaitement lisible. C'est la meilleure cote possible sur l'échelle de 1 à 5."
+      },
+      {
+        q: "Après un radio check, la réponse de la station doit contenir :",
+        choices: ["Uniquement la cote de lisibilité", "ID station appelante, ID station répondante, cote de lisibilité + commentaires", "Seulement ROGER si la qualité est bonne", "La fréquence de secours en cas de problème"],
+        correct: 1,
+        explain: "La réponse contient : (1) ID de la station appelante (2) ID de la station répondante (3) Cote de lisibilité (1-5) et tout commentaire utile sur la qualité."
+      }
+    ]
+  },
+
+  ch11: {
+    title: "Codes Q",
+    seuil: 75,
+    questions: [
+      {
+        q: "Que signifie QNH ?",
+        choices: ["Pression à l'altitude de l'aérodrome", "Calage altimétrique pour obtenir l'altitude au-dessus du niveau moyen de la mer", "Pression standard 1013.25 hPa", "Direction magnétique vers une installation"],
+        correct: 1,
+        explain: "QNH = calage altimétrique (sub-scale setting) pour obtenir l'altitude au-dessus du niveau moyen de la mer. Au sol, l'altimètre calé QNH indique l'altitude de l'aérodrome."
+      },
+      {
+        q: "Quelle est la différence entre QNH et QFE ?",
+        choices: ["Ce sont des synonymes", "QNH = pression au niveau de la mer / QFE = pression à l'altitude de l'aérodrome", "QFE est obsolète", "QNH est réservé aux vols IFR"],
+        correct: 1,
+        explain: "QNH = pression ramenée au niveau moyen de la mer → altimètre donne l'ALTITUDE. QFE = pression à l'altitude de l'aérodrome → altimètre donne la HAUTEUR au-dessus de l'aérodrome."
+      },
+      {
+        q: "QDM signifie :",
+        choices: ["Relèvement magnétique DEPUIS une installation", "Direction magnétique VERS une installation (cap avec vent nul)", "Relèvement vrai depuis une station", "Distance à un VOR"],
+        correct: 1,
+        explain: "QDM = direction magnétique VERS une installation (avec vent nul). QDR = relèvement magnétique DEPUIS (radiale). QTE = relèvement VRAI depuis. QUJ = relèvement VRAI vers."
+      },
+      {
+        q: "Comment prononce-t-on les codes Q en radiotéléphonie ?",
+        choices: ["Phonétiquement lettre par lettre", "En anglais courant (plain English), jamais phonétiquement", "En français", "En morse"],
+        correct: 1,
+        explain: "Les codes Q se prononcent en ANGLAIS COURANT, jamais phonétiquement. QNH se dit Q-N-H directement, pas QUEBEC-NOVEMBER-HOTEL."
+      },
+      {
+        q: "Que représente QNE ?",
+        choices: ["Pression à l'aérodrome", "Calage standard 1013.25 hPa — atmosphère ISA au niveau de la mer", "Direction magnétique", "Orientation de piste"],
+        correct: 1,
+        explain: "QNE = pression standard 1013.25 hPa. C'est le calage utilisé pour voler en niveau de vol (FL) au-dessus de l'altitude de transition. L'altimètre calé QNE indique le FL."
+      }
+    ]
+  },
+
+  ch12: {
+    title: "Informations Météorologiques",
+    seuil: 75,
+    questions: [
+      {
+        q: "Dans quel ordre les informations météo sont-elles transmises ?",
+        choices: ["Météo, piste, vent, QNH, visibilité", "Piste, vent, QNH, température, point de rosée, visibilité, nuages, précipitations, heure", "QNH, température, vent, piste, nuages", "Vent, QNH, piste, température, visibilité"],
+        correct: 1,
+        explain: "Ordre standard OACI : Piste → Vent → QNH → Température → Point de rosée → Visibilité → Nuages → Précipitations → Heure. Cet ordre doit être respecté."
+      },
+      {
+        q: "Que signifie CAVOK ?",
+        choices: ["Nuages et visibilité OK — conditions météo satisfaisantes", "Plafond et visibilité zéro", "Conditions avec averse", "Cumulonimbus actifs"],
+        correct: 0,
+        explain: "CAVOK = Ceiling And Visibility OK. Signifie : pas de nuages significatifs sous 5000 ft, pas de précipitations, visibilité > 10 km. C'est un terme condensé très utilisé."
+      },
+      {
+        q: "BKN (Broken) représente quelle couverture nuageuse ?",
+        choices: ["1/8 à 2/8 du ciel", "3/8 à 4/8 du ciel", "5/8 à 7/8 du ciel", "8/8 du ciel (ciel couvert)"],
+        correct: 2,
+        explain: "BKN = Broken = 5/8 à 7/8. Mémo : FEW (1-2/8), SCT/Scattered (3-4/8), BKN/Broken (5-7/8), OVC/Overcast (8/8). La base est divisée en 8 parties = octas."
+      },
+      {
+        q: "L'ATIS est :",
+        choices: ["Un type de procédure d'approche", "Un service d'information automatique diffusé en boucle continue sur une fréquence dédiée", "Un code météo d'urgence", "Une aide à la navigation"],
+        correct: 1,
+        explain: "ATIS = Automatic Terminal Information Service. Message enregistré diffusé en boucle continue, codé avec une lettre phonétique changée à chaque mise à jour."
+      },
+      {
+        q: "Quand le pilote doit-il mentionner la lettre ATIS au contrôleur ?",
+        choices: ["Uniquement si la météo a changé", "Au premier contact avec l'unité ATS de l'aérodrome", "À chaque transmission", "Seulement pour les vols IFR"],
+        correct: 1,
+        explain: "Le pilote doit mentionner la lettre ATIS reçue ('Information ALPHA received') AU PREMIER CONTACT avec la tour ou l'approche. Cela confirme qu'il a les dernières informations."
+      }
+    ]
+  },
+
+  ch13: {
+    title: "Échanges RTF Complets",
+    seuil: 80,
+    questions: [
+      {
+        q: "Lors d'un alignement (LINE UP), le pilote répond :",
+        choices: ["CLEARED FOR TAKE OFF, [indicatif]", "HOLDING POSITION, [indicatif]", "LINING UP, [indicatif]", "READY FOR DEPARTURE, [indicatif]"],
+        correct: 2,
+        explain: "La réponse à LINE UP est 'LINING UP, [indicatif]' — read-back verbatim. On aligne l'avion sur l'axe de piste et on attend la clairance de décollage."
+      },
+      {
+        q: "Le contrôleur dit 'STOP IMMEDIATELY'. Cela signifie :",
+        choices: ["Ralentir progressivement", "Arrêter le roulage au sol", "Arrêter le roulement au décollage immédiatement (urgence)", "Se mettre en attente"],
+        correct: 2,
+        explain: "'STOP IMMEDIATELY' est utilisé pour stopper un aéronef PENDANT le roulement au décollage — situation d'urgence (obstacle sur piste). Réponse : 'STOPPING, [indicatif]'."
+      },
+      {
+        q: "Quelle est la différence entre CANCEL TAKE OFF et STOP IMMEDIATELY ?",
+        choices: ["Ce sont des synonymes", "CANCEL = avant le roulement / STOP IMMEDIATELY = pendant le roulement", "STOP IMMEDIATELY = avant le roulement / CANCEL = pendant", "CANCEL est plus urgent"],
+        correct: 1,
+        explain: "CANCEL TAKE OFF = annulation avant le roulement (avion au point d'arrêt). STOP IMMEDIATELY = arrêt d'urgence PENDANT le roulement — répété 2 fois car ultra-urgent."
+      },
+      {
+        q: "GO AROUND signifie :",
+        choices: ["Procéder à un atterrissage immédiat", "Effectuer une remise des gaz — approche interrompue", "Faire un tour de piste supplémentaire", "Procéder à une approche directe"],
+        correct: 1,
+        explain: "GO AROUND = remise des gaz / approche interrompue. Peut être initié par l'ATC ou le pilote. En IFR, on parle de 'missed approach procedure'."
+      },
+      {
+        q: "Pour un atterrissage complet (FULL STOP), après avoir obtenu la clairance, le pilote répond :",
+        choices: ["LANDING, [indicatif]", "CLEARED TO LAND FOR FULL STOP, [indicatif]", "FULL STOP, [indicatif]", "ROGER TOWER, [indicatif]"],
+        correct: 1,
+        explain: "La réponse est 'CLEARED TO LAND FOR FULL STOP, [indicatif]' — read-back verbatim de la clairance d'atterrissage avec mention du FULL STOP."
+      }
+    ]
+  }
+};
+
+// ─────────────────────────────────────────────
+//  GESTION DE LA PROGRESSION
+// ─────────────────────────────────────────────
+const STORAGE_KEY = 'avv242_rtf_progress';
+
+function getProgress() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function saveProgress(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function markChapterComplete(chId, score, total) {
+  const p = getProgress();
+  p[chId] = { completed: true, score, total, date: new Date().toISOString() };
+  saveProgress(p);
+}
+
+function isChapterComplete(chId) {
+  const p = getProgress();
+  return p[chId] && p[chId].completed;
+}
+
+function getChapterScore(chId) {
+  const p = getProgress();
+  return p[chId] ? p[chId] : null;
+}
+
+// ─────────────────────────────────────────────
+//  RENDU DU QUIZ
+// ─────────────────────────────────────────────
+function initQuiz(chapterId) {
+  const bank = QUIZ_BANK[chapterId];
+  if (!bank) return;
+
+  const container = document.getElementById('quizContainer');
+  if (!container) return;
+
+  let currentQ = 0;
+  let score = 0;
+  let answered = false;
+  const questions = bank.questions;
+
+  function render() {
+    if (currentQ >= questions.length) { showResult(); return; }
+    answered = false;
+    const q = questions[currentQ];
+    const letters = ['A', 'B', 'C', 'D'];
+
+    container.innerHTML = `
+      <div class="quiz-wrap">
+        <div class="quiz-meta">
+          <span class="qz-tag">// QUIZ · ${bank.title.toUpperCase()}</span>
+          <span class="qz-count">QUESTION ${currentQ + 1} / ${questions.length}</span>
+          <span class="qz-score">SCORE : ${score} / ${currentQ}</span>
+        </div>
+        <div class="quiz-progress-bar">
+          <div class="qpb-fill" style="width:${(currentQ / questions.length) * 100}%"></div>
+        </div>
+        <div class="quiz-question">${q.q}</div>
+        <div class="quiz-choices" id="qChoices">
+          ${q.choices.map((ch, i) => `
+            <div class="quiz-choice" id="qc${i}" onclick="answerQ(${i})">
+              <span class="qc-letter">${letters[i]}</span>
+              <span class="qc-text">${ch}</span>
+              <span class="qc-icon" id="qci${i}"></span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="quiz-explain" id="qExplain" style="display:none;"></div>
+        <div class="quiz-actions" id="qActions" style="display:none;">
+          <button class="qz-btn-next" onclick="nextQuestion()">
+            ${currentQ + 1 < questions.length ? 'Question suivante →' : 'Voir mon résultat →'}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  window.answerQ = function(i) {
+    if (answered) return;
+    answered = true;
+    const q = questions[currentQ];
+    for (let j = 0; j < q.choices.length; j++) {
+      const el = document.getElementById('qc' + j);
+      const ic = document.getElementById('qci' + j);
+      if (j === q.correct) { el.classList.add('correct'); ic.textContent = '✓'; }
+      else if (j === i && i !== q.correct) { el.classList.add('wrong'); ic.textContent = '✗'; }
+      el.onclick = null;
+    }
+    if (i === q.correct) score++;
+
+    // Afficher explication
+    const ex = document.getElementById('qExplain');
+    ex.textContent = q.explain;
+    ex.style.display = 'block';
+    ex.className = 'quiz-explain ' + (i === q.correct ? 'correct-explain' : 'wrong-explain');
+
+    document.getElementById('qActions').style.display = 'flex';
+  };
+
+  window.nextQuestion = function() {
+    currentQ++;
+    render();
+  };
+
+  function showResult() {
+    const pct = Math.round((score / questions.length) * 100);
+    const pass = pct >= bank.seuil;
+
+    if (pass) markChapterComplete(chapterId, score, questions.length);
+
+    // Déterminer le chapitre suivant
+    const chNums = Object.keys(QUIZ_BANK);
+    const idx = chNums.indexOf(chapterId);
+    const nextCh = chNums[idx + 1];
+    const nextPage = nextCh ? `avv-rtf-${nextCh}.html` : 'avv-rtf-sommaire.html';
+    const nextLabel = nextCh ? `Chapitre suivant →` : 'Retour au sommaire →';
+
+    container.innerHTML = `
+      <div class="quiz-result ${pass ? 'result-pass' : 'result-fail'}">
+        <div class="qr-icon">${pass ? '✓' : '✗'}</div>
+        <div class="qr-title">${pass ? 'CHAPITRE VALIDÉ' : 'À REVOIR'}</div>
+        <div class="qr-score">${score} / ${questions.length} — ${pct}%</div>
+        <div class="qr-seuil">Seuil requis : ${bank.seuil}%</div>
+        <div class="qr-message">${pass
+          ? 'Excellente maîtrise de ce chapitre. Vous pouvez passer au suivant.'
+          : 'Révisez le cours et retentez le quiz. La répétition est clé dans la préparation RTF.'
+        }</div>
+        <div class="qr-actions">
+          <button class="qz-btn-retry" onclick="initQuiz('${chapterId}')">↺ Recommencer</button>
+          ${pass ? `<a class="qz-btn-next" href="${nextPage}">${nextLabel}</a>` : ''}
+          <a class="qz-btn-sommaire" href="avv-rtf-sommaire.html">Sommaire</a>
+        </div>
+      </div>
+    `;
+  }
+
+  render();
+}
+
+// ─────────────────────────────────────────────
+//  MISE À JOUR DU SOMMAIRE
+// ─────────────────────────────────────────────
+function initSommaire() {
+  const cards = document.querySelectorAll('[data-chapter]');
+  cards.forEach(card => {
+    const chId = card.dataset.chapter;
+    const sc = getChapterScore(chId);
+    const badge = card.querySelector('.ch-status');
+    const scoreTxt = card.querySelector('.ch-score');
+    if (sc && badge) {
+      badge.textContent = '✓';
+      badge.className = 'ch-status completed';
+    }
+    if (sc && scoreTxt) {
+      scoreTxt.textContent = `${sc.score}/${sc.total} — ${Math.round((sc.score/sc.total)*100)}%`;
+    }
+  });
+
+  // Barre progression globale
+  const total = Object.keys(QUIZ_BANK).length;
+  const done = Object.keys(QUIZ_BANK).filter(k => isChapterComplete(k)).length;
+  const pct = Math.round((done / total) * 100);
+  const bar = document.getElementById('globalProgress');
+  const pctEl = document.getElementById('globalPct');
+  const doneEl = document.getElementById('globalDone');
+  if (bar) bar.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (doneEl) doneEl.textContent = `${done} / ${total} chapitres validés`;
+}
+
+// ─────────────────────────────────────────────
+//  ACCÈS CONSOLE
+// ─────────────────────────────────────────────
+window.AVV242_RTF = {
+  getProgress,
+  resetProgress: () => { localStorage.removeItem(STORAGE_KEY); location.reload(); },
+  markAll: () => {
+    Object.keys(QUIZ_BANK).forEach(k => markChapterComplete(k, 5, 5));
+    location.reload();
+  }
+};
+
+// Init auto
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('quizContainer') && typeof CURRENT_CHAPTER !== 'undefined') {
+    initQuiz(CURRENT_CHAPTER);
+  }
+  if (document.getElementById('globalProgress')) {
+    initSommaire();
+  }
+});
+</script>
+<script>const cur=document.querySelector('.cursor');document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});</script>
+</body>
+</html>
